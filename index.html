@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Controle de Estoque</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #f4f6f9;
+      padding: 20px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: auto;
+    }
+
+    h1 {
+      color: #1f4e78;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 14px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      padding: 12px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      color: white;
+    }
+
+    .entrada-btn {
+      background: #198754;
+    }
+
+    .saida-btn {
+      background: #dc3545;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      background: white;
+    }
+
+    th {
+      background: #1f4e78;
+      color: white;
+      padding: 12px;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      font-size: 14px;
+    }
+
+    .baixo {
+      color: red;
+      font-weight: bold;
+    }
+
+    .badge {
+      padding: 6px 10px;
+      border-radius: 20px;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+      display: inline-block;
+    }
+
+    .entrada {
+      background: #198754;
+    }
+
+    .saida {
+      background: #dc3545;
+    }
+
+    @media (max-width: 768px) {
+      table {
+        display: block;
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <h1>Controle de Estoque - Produtos de Limpeza</h1>
+
+  <div class="card">
+    <h2 style="margin-bottom: 20px;">Movimentação</h2>
+
+    <div class="grid">
+
+      <div>
+        <label>Produto</label>
+        <select id="produto"></select>
+      </div>
+
+      <div>
+        <label>Quantidade</label>
+        <input type="number" id="quantidade" min="1">
+      </div>
+
+      <div>
+        <label>Responsável</label>
+        <input type="text" id="responsavel">
+      </div>
+
+      <div>
+        <label>Data de Validade</label>
+        <input type="date" id="validade">
+      </div>
+
+      <div>
+        <label>Data de Recebimento</label>
+        <input type="date" id="recebimento">
+      </div>
+
+      <div>
+        <label>Data de Entrega ao Setor</label>
+        <input type="date" id="entrega">
+      </div>
+
+      <div>
+        <label>Assinatura do Responsável</label>
+        <input type="text" id="assinatura" placeholder="Digite o nome">
+      </div>
+
+    </div>
+
+    <div style="margin-top:15px;">
+      <label>Observações</label>
+      <textarea id="observacoes"></textarea>
+    </div>
+
+    <div class="buttons">
+      <button class="entrada-btn" onclick="registrarEntrada()">
+        Registrar Entrada
+      </button>
+
+      <button class="saida-btn" onclick="registrarSaida()">
+        Registrar Saída
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Estoque Atual</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Produto</th>
+          <th>Saldo Atual</th>
+          <th>Última Atualização</th>
+        </tr>
+      </thead>
+
+      <tbody id="estoqueTabela"></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Histórico de Movimentações</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Tipo</th>
+          <th>Produto</th>
+          <th>Quantidade</th>
+          <th>Responsável</th>
+          <th>Data</th>
+          <th>Saldo Atual</th>
+          <th>Observações</th>
+        </tr>
+      </thead>
+
+      <tbody id="historicoTabela"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script type="module">
+
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+
+  import {
+    getFirestore,
+    collection,
+    getDocs,
+    addDoc,
+    updateDoc,
+    doc,
+    getDoc,
+    setDoc,
+    query,
+    orderBy,
+    serverTimestamp
+  } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+  // =========================================
+  // CONFIG FIREBASE
+  // =========================================
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDyQmPBYiwC_MqlQWyGnU95Ld8Y-kgd8GA",
+  authDomain: "estoquelimpeza-d22f2.firebaseapp.com",
+  databaseURL: "https://estoquelimpeza-d22f2-default-rtdb.firebaseio.com",
+  projectId: "estoquelimpeza-d22f2",
+  storageBucket: "estoquelimpeza-d22f2.firebasestorage.app",
+  messagingSenderId: "637980743711",
+  appId: "1:637980743711:web:2773e86c1ca64cc9229d2a",
+  measurementId: "G-H81CZHECZ2"
+};
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // =========================================
+  // PRODUTOS INICIAIS
+  // =========================================
+
+  const produtosIniciais = [
+    { nome: 'Água Sanitária', estoque: 12 },
+    { nome: 'Álcool 70', estoque: 22 },
+    { nome: 'Balde', estoque: 12 },
+    { nome: 'Bombril', estoque: 0 },
+    { nome: 'Desinfetante', estoque: 8 },
+    { nome: 'Multiuso', estoque: 5 },
+    { nome: 'Papel Higiênico', estoque: 21 },
+    { nome: 'Papel Toalha', estoque: 7 },
+    { nome: 'Rodo Grande', estoque: 11 },
+    { nome: 'Sabão em Barra', estoque: 0 },
+    { nome: 'Sabão em Pó', estoque: 5 },
+    { nome: 'Sabonete Líquido', estoque: 8 },
+    { nome: 'Saco de Lixo 100L', estoque: 46 },
+    { nome: 'Saco de Lixo 30L', estoque: 470 }
+  ];
+
+  // =========================================
+  // CRIAR PRODUTOS NO FIREBASE
+  // =========================================
+
+  async function criarProdutosIniciais() {
+
+    const snapshot = await getDocs(collection(db, 'produtos'));
+
+    if (snapshot.empty) {
+
+      for (const produto of produtosIniciais) {
+
+        await setDoc(doc(db, 'produtos', produto.nome), {
+          nome: produto.nome,
+          estoque: produto.estoque,
+          ultimaAtualizacao: new Date().toLocaleString('pt-BR')
+        });
+      }
+    }
+  }
+
+  // =========================================
+  // CARREGAR PRODUTOS
+  // =========================================
+
+  async function carregarProdutos() {
+
+    const select = document.getElementById('produto');
+    select.innerHTML = '';
+
+    const snapshot = await getDocs(collection(db, 'produtos'));
+
+    let produtos = [];
+
+    snapshot.forEach((doc) => {
+      produtos.push(doc.data());
+    });
+
+    produtos.sort((a, b) => a.nome.localeCompare(b.nome));
+
+    produtos.forEach((produto) => {
+
+      const option = document.createElement('option');
+      option.value = produto.nome;
+      option.textContent = produto.nome;
+
+      select.appendChild(option);
+    });
+  }
+
+  // =========================================
+  // ATUALIZAR ESTOQUE NA TELA
+  // =========================================
+
+  async function atualizarTabelaEstoque() {
+
+    const tabela = document.getElementById('estoqueTabela');
+    tabela.innerHTML = '';
+
+    const snapshot = await getDocs(collection(db, 'produtos'));
+
+    let produtos = [];
+
+    snapshot.forEach((doc) => {
+      produtos.push(doc.data());
+    });
+
+    produtos.sort((a, b) => a.nome.localeCompare(b.nome));
+
+    produtos.forEach((produto) => {
+
+      const tr = document.createElement('tr');
+
+      tr.innerHTML = `
+        <td>${produto.nome}</td>
+        <td class="${produto.estoque <= 5 ? 'baixo' : ''}">
+          ${produto.estoque}
+        </td>
+        <td>${produto.ultimaAtualizacao || '-'}</td>
+      `;
+
+      tabela.appendChild(tr);
+    });
+  }
+
+  // =========================================
+  // HISTÓRICO
+  // =========================================
+
+  async function carregarHistorico() {
+
+    const tabela = document.getElementById('historicoTabela');
+    tabela.innerHTML = '';
+
+    const q = query(
+      collection(db, 'movimentacoes'),
+      orderBy('dataCriacao', 'desc')
+    );
+
+    const snapshot = await getDocs(q);
+
+    snapshot.forEach((item) => {
+
+      const mov = item.data();
+
+      const tr = document.createElement('tr');
+
+      tr.innerHTML = `
+        <td>
+          <span class="badge ${mov.tipo === 'Entrada' ? 'entrada' : 'saida'}">
+            ${mov.tipo}
+          </span>
+        </td>
+
+        <td>${mov.produto}</td>
+        <td>${mov.quantidade}</td>
+        <td>${mov.responsavel}</td>
+        <td>${mov.data}</td>
+        <td>${mov.saldo}</td>
+        <td>${mov.observacoes || '-'}</td>
+      `;
+
+      tabela.appendChild(tr);
+    });
+  }
+
+  // =========================================
+  // MOVIMENTAÇÃO
+  // =========================================
+
+  async function movimentar(tipo) {
+
+    const produtoNome = document.getElementById('produto').value;
+    const quantidade = Number(document.getElementById('quantidade').value);
+    const responsavel = document.getElementById('responsavel').value;
+    const validade = document.getElementById('validade').value;
+    const recebimento = document.getElementById('recebimento').value;
+    const entrega = document.getElementById('entrega').value;
+    const assinatura = document.getElementById('assinatura').value;
+    const observacoes = document.getElementById('observacoes').value;
+
+    if (!responsavel || !quantidade) {
+      alert('Preencha os campos obrigatórios.');
+      return;
+    }
+
+    const produtoRef = doc(db, 'produtos', produtoNome);
+    const produtoSnap = await getDoc(produtoRef);
+
+    const produto = produtoSnap.data();
+
+    let novoSaldo = produto.estoque;
+
+    if (tipo === 'Entrada') {
+      novoSaldo += quantidade;
+    }
+
+    if (tipo === 'Saída') {
+
+      if (quantidade > produto.estoque) {
+        alert('Estoque insuficiente.');
+        return;
+      }
+
+      novoSaldo -= quantidade;
+    }
+
+    await updateDoc(produtoRef, {
+      estoque: novoSaldo,
+      ultimaAtualizacao: new Date().toLocaleString('pt-BR')
+    });
+
+    await addDoc(collection(db, 'movimentacoes'), {
+      tipo,
+      produto: produtoNome,
+      quantidade,
+      responsavel,
+      validade,
+      recebimento,
+      entrega,
+      assinatura,
+      observacoes,
+      saldo: novoSaldo,
+      data: new Date().toLocaleString('pt-BR'),
+      dataCriacao: serverTimestamp()
+    });
+
+    limparCampos();
+
+    await atualizarTabelaEstoque();
+    await carregarHistorico();
+  }
+
+  // =========================================
+  // BOTÕES
+  // =========================================
+
+  window.registrarEntrada = async () => {
+    await movimentar('Entrada');
+  }
+
+  window.registrarSaida = async () => {
+    await movimentar('Saída');
+  }
+
+  // =========================================
+  // LIMPAR CAMPOS
+  // =========================================
+
+  function limparCampos() {
+
+    document.getElementById('quantidade').value = '';
+    document.getElementById('responsavel').value = '';
+    document.getElementById('validade').value = '';
+    document.getElementById('recebimento').value = '';
+    document.getElementById('entrega').value = '';
+    document.getElementById('assinatura').value = '';
+    document.getElementById('observacoes').value = '';
+  }
+
+  // =========================================
+  // INICIAR SISTEMA
+  // =========================================
+
+  async function iniciarSistema() {
+
+    await criarProdutosIniciais();
+    await carregarProdutos();
+    await atualizarTabelaEstoque();
+    await carregarHistorico();
+  }
+
+  iniciarSistema();
+
+</script>
+
+</body>
+</html>
