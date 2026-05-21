@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>Controle de Estoque</title>
 
   <style>
@@ -15,38 +15,48 @@
 
     body {
       background: #f4f6f9;
-      padding: 20px;
+      padding: 16px;
       color: #333;
     }
 
     .container {
-      max-width: 1400px;
-      margin: auto;
+      max-width: 1200px;
+      margin: 0 auto;
     }
 
     h1 {
       color: #1f4e78;
       margin-bottom: 20px;
+      font-size: 1.5rem;
     }
 
     .card {
       background: white;
-      padding: 20px;
+      padding: 16px;
       border-radius: 14px;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.08);
     }
 
     .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    @media (min-width: 768px) {
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+      }
     }
 
     label {
       display: block;
       margin-bottom: 6px;
       font-weight: bold;
+      font-size: 14px;
     }
 
     input,
@@ -56,6 +66,7 @@
       padding: 10px;
       border-radius: 8px;
       border: 1px solid #ccc;
+      font-size: 16px;
     }
 
     textarea {
@@ -77,6 +88,13 @@
       cursor: pointer;
       font-weight: bold;
       color: white;
+      transition: opacity 0.3s;
+      font-size: 14px;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
 
     .entrada-btn {
@@ -87,8 +105,12 @@
       background: #dc3545;
     }
 
-    button:hover {
-      opacity: 0.9;
+    .logout-btn {
+      background: #6c757d;
+    }
+
+    .admin-btn {
+      background: #fd7e14;
     }
 
     table {
@@ -96,20 +118,20 @@
       border-collapse: collapse;
       margin-top: 15px;
       background: white;
+      display: block;
+      overflow-x: auto;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: left;
+      font-size: 13px;
+      border-bottom: 1px solid #ddd;
     }
 
     th {
       background: #1f4e78;
       color: white;
-      padding: 12px;
-      text-align: left;
-      font-size: 14px;
-    }
-
-    td {
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
-      font-size: 14px;
     }
 
     .baixo {
@@ -118,136 +140,280 @@
     }
 
     .badge {
-      padding: 6px 10px;
+      padding: 4px 8px;
       border-radius: 20px;
       color: white;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: bold;
       display: inline-block;
     }
 
-    .entrada {
-      background: #198754;
+    .entrada { background: #198754; }
+    .saida { background: #dc3545; }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      z-index: 1000;
+      animation: fadeIn 0.3s ease;
     }
 
-    .saida {
-      background: #dc3545;
+    .toast.success { background: #198754; }
+    .toast.error { background: #dc3545; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; bottom: 0; }
+      to { opacity: 1; bottom: 20px; }
+    }
+
+    .login-container {
+      max-width: 400px;
+      margin: 50px auto;
+      background: white;
+      padding: 24px;
+      border-radius: 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .login-container h2 {
+      margin-bottom: 20px;
+      color: #1f4e78;
+    }
+
+    .login-btn {
+      background: #1f4e78;
+      width: 100%;
+      margin-top: 15px;
+    }
+
+    .user-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding: 12px;
+      background: #e9ecef;
+      border-radius: 8px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .user-info span {
+      font-weight: bold;
+      color: #1f4e78;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1001;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 14px;
+      width: 90%;
+      max-width: 500px;
+    }
+
+    .close {
+      float: right;
+      cursor: pointer;
+      font-size: 24px;
+    }
+
+    .filtro {
+      margin-bottom: 15px;
+    }
+
+    .filtro input {
+      width: 100%;
     }
 
     @media (max-width: 768px) {
-      table {
-        display: block;
-        overflow-x: auto;
+      body {
+        padding: 12px;
+      }
+      
+      .card {
+        padding: 12px;
+      }
+      
+      th, td {
+        padding: 8px;
+        font-size: 12px;
+      }
+      
+      button {
+        padding: 10px 16px;
       }
     }
   </style>
 </head>
 <body>
 
-<div class="container">
+<div id="loginContainer" class="login-container">
+  <h2>🔐 Controle de Estoque</h2>
+  <div>
+    <label>Email</label>
+    <input type="email" id="loginEmail" placeholder="seu@email.com">
+  </div>
+  <div style="margin-top: 15px;">
+    <label>Senha</label>
+    <input type="password" id="loginSenha" placeholder="********">
+  </div>
+  <button class="login-btn" onclick="fazerLogin()">Entrar</button>
+</div>
 
-  <h1>Controle de Estoque - Produtos de Limpeza</h1>
-
-  <div class="card">
-    <h2 style="margin-bottom: 20px;">Movimentação</h2>
-
-    <div class="grid">
-
+<div id="mainContent" style="display: none;">
+  <div class="container">
+    <div class="user-info">
+      <div>👤 <span id="userName"></span> - <span id="userRole"></span></div>
       <div>
-        <label>Produto</label>
-        <select id="produto"></select>
+        <button class="admin-btn" id="adminBtn" onclick="abrirModalAdmin()" style="display: none;">
+          👑 Admins
+        </button>
+        <button class="logout-btn" onclick="fazerLogout()">Sair</button>
       </div>
-
-      <div>
-        <label>Quantidade</label>
-        <input type="number" id="quantidade" min="1">
-      </div>
-
-      <div>
-        <label>Responsável</label>
-        <input type="text" id="responsavel">
-      </div>
-
-      <div>
-        <label>Data de Validade</label>
-        <input type="date" id="validade">
-      </div>
-
-      <div>
-        <label>Data de Recebimento</label>
-        <input type="date" id="recebimento">
-      </div>
-
-      <div>
-        <label>Data de Entrega ao Setor</label>
-        <input type="date" id="entrega">
-      </div>
-
-      <div>
-        <label>Assinatura do Responsável</label>
-        <input type="text" id="assinatura" placeholder="Digite o nome">
-      </div>
-
     </div>
 
-    <div style="margin-top:15px;">
-      <label>Observações</label>
-      <textarea id="observacoes"></textarea>
+    <h1>📦 Controle de Estoque - Produtos de Limpeza</h1>
+
+    <div class="card">
+      <h2 style="margin-bottom: 16px;">➕ Movimentação</h2>
+
+      <div class="grid">
+        <div>
+          <label>Produto</label>
+          <select id="produto"></select>
+        </div>
+
+        <div>
+          <label>Quantidade</label>
+          <input type="number" id="quantidade" min="1">
+        </div>
+
+        <div>
+          <label>Responsável</label>
+          <input type="text" id="responsavel">
+        </div>
+
+        <div>
+          <label>Data de Validade</label>
+          <input type="date" id="validade">
+        </div>
+
+        <div>
+          <label>Data de Recebimento</label>
+          <input type="date" id="recebimento">
+        </div>
+
+        <div>
+          <label>Data de Entrega ao Setor</label>
+          <input type="date" id="entrega">
+        </div>
+
+        <div>
+          <label>Assinatura do Responsável</label>
+          <input type="text" id="assinatura" placeholder="Digite o nome">
+        </div>
+      </div>
+
+      <div style="margin-top: 15px;">
+        <label>Observações</label>
+        <textarea id="observacoes"></textarea>
+      </div>
+
+      <div class="buttons">
+        <button class="entrada-btn" onclick="registrarEntrada()">Registrar Entrada</button>
+        <button class="saida-btn" onclick="registrarSaida()">Registrar Saída</button>
+      </div>
     </div>
 
-    <div class="buttons">
-      <button class="entrada-btn" onclick="registrarEntrada()">
-        Registrar Entrada
+    <div class="card">
+      <h2>📊 Estoque Atual</h2>
+      <div class="filtro">
+        <input type="text" id="filtroProduto" placeholder="🔍 Filtrar produto..." onkeyup="filtrarEstoque()">
+      </div>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th>Saldo</th>
+              <th>Atualização</th>
+            </tr>
+          </thead>
+          <tbody id="estoqueTabela"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📜 Histórico</h2>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Produto</th>
+              <th>Qtd</th>
+              <th>Responsável</th>
+              <th>Data</th>
+              <th>Obs</th>
+            </tr>
+          </thead>
+          <tbody id="historicoTabela"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="adminModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="fecharModalAdmin()">&times;</span>
+    <h3>👑 Gerenciar Admins</h3>
+    
+    <div style="margin-bottom: 20px;">
+      <label>Email do novo admin</label>
+      <input type="email" id="novoAdminEmail" placeholder="admin@exemplo.com">
+      <label style="margin-top: 10px;">Senha</label>
+      <input type="password" id="novoAdminSenha" placeholder="********">
+      <button class="admin-btn" onclick="cadastrarAdmin()" style="margin-top: 10px; width: 100%;">
+        Cadastrar Admin
       </button>
-
-      <button class="saida-btn" onclick="registrarSaida()">
-        Registrar Saída
-      </button>
     </div>
+    
+    <hr>
+    <h4>Administradores</h4>
+    <div id="listaAdmins" style="max-height: 300px; overflow-y: auto; margin-top: 10px;"></div>
   </div>
-
-  <div class="card">
-    <h2>Estoque Atual</h2>
-
-    <table>
-      <thead>
-        <tr>
-          <th>Produto</th>
-          <th>Saldo Atual</th>
-          <th>Última Atualização</th>
-        </tr>
-      </thead>
-
-      <tbody id="estoqueTabela"></tbody>
-    </table>
-  </div>
-
-  <div class="card">
-    <h2>Histórico de Movimentações</h2>
-
-    <table>
-      <thead>
-        <tr>
-          <th>Tipo</th>
-          <th>Produto</th>
-          <th>Quantidade</th>
-          <th>Responsável</th>
-          <th>Data</th>
-          <th>Saldo Atual</th>
-          <th>Observações</th>
-        </tr>
-      </thead>
-
-      <tbody id="historicoTabela"></tbody>
-    </table>
-  </div>
-
 </div>
 
 <script type="module">
-
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-
+  import { 
+    getAuth, 
+    signInWithEmailAndPassword, 
+    signOut, 
+    onAuthStateChanged,
+    createUserWithEmailAndPassword
+  } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
   import {
     getFirestore,
     collection,
@@ -259,30 +425,28 @@
     setDoc,
     query,
     orderBy,
-    serverTimestamp
+    runTransaction,
+    serverTimestamp,
+    deleteDoc
   } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-  // =========================================
-  // CONFIG FIREBASE
-  // =========================================
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDyQmPBYiwC_MqlQWyGnU95Ld8Y-kgd8GA",
-  authDomain: "estoquelimpeza-d22f2.firebaseapp.com",
-  databaseURL: "https://estoquelimpeza-d22f2-default-rtdb.firebaseio.com",
-  projectId: "estoquelimpeza-d22f2",
-  storageBucket: "estoquelimpeza-d22f2.firebasestorage.app",
-  messagingSenderId: "637980743711",
-  appId: "1:637980743711:web:2773e86c1ca64cc9229d2a",
-  measurementId: "G-H81CZHECZ2"
+  // 🔴 COLOQUE AQUI SUAS CONFIGURAÇÕES DO FIREBASE 🔴
+  const firebaseConfig = {
+  apiKey: "AIzaSyBZrINLf5w3u_jdZSltZNX1zfBJQ5-dREg",
+  authDomain: "estoquelimpeza-88501.firebaseapp.com",
+  projectId: "estoquelimpeza-88501",
+  storageBucket: "estoquelimpeza-88501.firebasestorage.app",
+  messagingSenderId: "786386064285",
+  appId: "1:786386064285:web:861ab922e5372548edd574"
 };
 
   const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // =========================================
-  // PRODUTOS INICIAIS
-  // =========================================
+  let usuarioAtual = null;
+  let produtosCache = [];
+  let historicoCache = [];
 
   const produtosIniciais = [
     { nome: 'Água Sanitária', estoque: 12 },
@@ -301,19 +465,110 @@ const firebaseConfig = {
     { nome: 'Saco de Lixo 30L', estoque: 470 }
   ];
 
-  // =========================================
-  // CRIAR PRODUTOS NO FIREBASE
-  // =========================================
+  function mostrarToast(mensagem, tipo = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `toast ${tipo}`;
+    toast.textContent = mensagem;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+
+  async function verificarAdmin(uid) {
+    const adminDoc = await getDoc(doc(db, 'admins', uid));
+    return adminDoc.exists();
+  }
+
+  window.fazerLogin = async function() {
+    const email = document.getElementById('loginEmail').value;
+    const senha = document.getElementById('loginSenha').value;
+    if (!email || !senha) {
+      mostrarToast('Preencha email e senha', 'error');
+      return;
+    }
+    try {
+      await signInWithEmailAndPassword(auth, email, senha);
+      mostrarToast('Login realizado!', 'success');
+    } catch (error) {
+      mostrarToast('Email ou senha inválidos', 'error');
+    }
+  }
+
+  window.fazerLogout = async function() {
+    await signOut(auth);
+  }
+
+  window.cadastrarAdmin = async function() {
+    if (!usuarioAtual?.isAdmin) {
+      mostrarToast('Acesso negado', 'error');
+      return;
+    }
+    const email = document.getElementById('novoAdminEmail').value;
+    const senha = document.getElementById('novoAdminSenha').value;
+    if (!email || !senha) {
+      mostrarToast('Preencha email e senha', 'error');
+      return;
+    }
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
+      await setDoc(doc(db, 'admins', userCredential.user.uid), {
+        email: email,
+        criadoPor: usuarioAtual.uid,
+        criadoEm: serverTimestamp()
+      });
+      mostrarToast('Admin cadastrado!', 'success');
+      document.getElementById('novoAdminEmail').value = '';
+      document.getElementById('novoAdminSenha').value = '';
+      carregarListaAdmins();
+    } catch (error) {
+      mostrarToast(error.message, 'error');
+    }
+  }
+
+  async function carregarListaAdmins() {
+    const snapshot = await getDocs(collection(db, 'admins'));
+    const listaDiv = document.getElementById('listaAdmins');
+    listaDiv.innerHTML = '';
+    for (const doc of snapshot.docs) {
+      const admin = doc.data();
+      const div = document.createElement('div');
+      div.style.padding = '8px';
+      div.style.borderBottom = '1px solid #ddd';
+      div.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div><strong>${admin.email}</strong></div>
+          ${doc.id !== usuarioAtual?.uid ? `<button onclick="removerAdmin('${doc.id}')" style="background:#dc3545; padding:4px 8px;">Remover</button>` : '<span style="color:#666;">(Você)</span>'}
+        </div>
+      `;
+      listaDiv.appendChild(div);
+    }
+  }
+
+  window.removerAdmin = async function(uid) {
+    if (confirm('Remover este administrador?')) {
+      await deleteDoc(doc(db, 'admins', uid));
+      mostrarToast('Admin removido', 'success');
+      carregarListaAdmins();
+    }
+  }
+
+  window.abrirModalAdmin = function() {
+    if (usuarioAtual?.isAdmin) {
+      document.getElementById('adminModal').style.display = 'flex';
+      carregarListaAdmins();
+    }
+  }
+
+  window.fecharModalAdmin = function() {
+    document.getElementById('adminModal').style.display = 'none';
+  }
 
   async function criarProdutosIniciais() {
-
     const snapshot = await getDocs(collection(db, 'produtos'));
-
     if (snapshot.empty) {
-
       for (const produto of produtosIniciais) {
-
-        await setDoc(doc(db, 'produtos', produto.nome), {
+        const id = produto.nome.replace(/\s+/g, '_').toLowerCase();
+        await setDoc(doc(db, 'produtos', id), {
+          id: id,
           nome: produto.nome,
           estoque: produto.estoque,
           ultimaAtualizacao: new Date().toLocaleString('pt-BR')
@@ -322,118 +577,81 @@ const firebaseConfig = {
     }
   }
 
-  // =========================================
-  // CARREGAR PRODUTOS
-  // =========================================
-
   async function carregarProdutos() {
-
     const select = document.getElementById('produto');
-    select.innerHTML = '';
-
     const snapshot = await getDocs(collection(db, 'produtos'));
-
-    let produtos = [];
-
-    snapshot.forEach((doc) => {
-      produtos.push(doc.data());
-    });
-
-    produtos.sort((a, b) => a.nome.localeCompare(b.nome));
-
-    produtos.forEach((produto) => {
-
+    produtosCache = [];
+    snapshot.forEach(doc => produtosCache.push({ id: doc.id, ...doc.data() }));
+    produtosCache.sort((a, b) => a.nome.localeCompare(b.nome));
+    select.innerHTML = '';
+    produtosCache.forEach(produto => {
       const option = document.createElement('option');
-      option.value = produto.nome;
-      option.textContent = produto.nome;
-
+      option.value = produto.id;
+      option.textContent = `${produto.nome} (${produto.estoque})`;
       select.appendChild(option);
     });
   }
 
-  // =========================================
-  // ATUALIZAR ESTOQUE NA TELA
-  // =========================================
-
   async function atualizarTabelaEstoque() {
-
+    const snapshot = await getDocs(collection(db, 'produtos'));
+    const produtos = [];
+    snapshot.forEach(doc => produtos.push({ id: doc.id, ...doc.data() }));
+    produtosCache = produtos;
+    produtos.sort((a, b) => a.nome.localeCompare(b.nome));
+    
     const tabela = document.getElementById('estoqueTabela');
     tabela.innerHTML = '';
-
-    const snapshot = await getDocs(collection(db, 'produtos'));
-
-    let produtos = [];
-
-    snapshot.forEach((doc) => {
-      produtos.push(doc.data());
-    });
-
-    produtos.sort((a, b) => a.nome.localeCompare(b.nome));
-
-    produtos.forEach((produto) => {
-
+    produtos.forEach(produto => {
       const tr = document.createElement('tr');
-
       tr.innerHTML = `
         <td>${produto.nome}</td>
-        <td class="${produto.estoque <= 5 ? 'baixo' : ''}">
-          ${produto.estoque}
-        </td>
+        <td class="${produto.estoque === 0 ? 'baixo' : ''}">${produto.estoque}</td>
         <td>${produto.ultimaAtualizacao || '-'}</td>
       `;
-
       tabela.appendChild(tr);
     });
   }
 
-  // =========================================
-  // HISTÓRICO
-  // =========================================
+  window.filtrarEstoque = function() {
+    const filtro = document.getElementById('filtroProduto').value.toLowerCase();
+    const filtrados = produtosCache.filter(p => p.nome.toLowerCase().includes(filtro));
+    const tabela = document.getElementById('estoqueTabela');
+    tabela.innerHTML = '';
+    filtrados.forEach(produto => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${produto.nome}</td>
+        <td class="${produto.estoque === 0 ? 'baixo' : ''}">${produto.estoque}</td>
+        <td>${produto.ultimaAtualizacao || '-'}</td>
+      `;
+      tabela.appendChild(tr);
+    });
+  }
 
   async function carregarHistorico() {
-
+    const q = query(collection(db, 'movimentacoes'), orderBy('dataCriacao', 'desc'));
+    const snapshot = await getDocs(q);
+    historicoCache = [];
+    snapshot.forEach(doc => historicoCache.push(doc.data()));
+    
     const tabela = document.getElementById('historicoTabela');
     tabela.innerHTML = '';
-
-    const q = query(
-      collection(db, 'movimentacoes'),
-      orderBy('dataCriacao', 'desc')
-    );
-
-    const snapshot = await getDocs(q);
-
-    snapshot.forEach((item) => {
-
-      const mov = item.data();
-
+    historicoCache.forEach(mov => {
       const tr = document.createElement('tr');
-
       tr.innerHTML = `
-        <td>
-          <span class="badge ${mov.tipo === 'Entrada' ? 'entrada' : 'saida'}">
-            ${mov.tipo}
-          </span>
-        </td>
-
+        <td><span class="badge ${mov.tipo === 'Entrada' ? 'entrada' : 'saida'}">${mov.tipo}</span></td>
         <td>${mov.produto}</td>
         <td>${mov.quantidade}</td>
-        <td>${mov.responsavel}</td>
-        <td>${mov.data}</td>
-        <td>${mov.saldo}</td>
+        <td>${mov.responsavel || '-'}</td>
+        <td>${mov.data || '-'}</td>
         <td>${mov.observacoes || '-'}</td>
       `;
-
       tabela.appendChild(tr);
     });
   }
 
-  // =========================================
-  // MOVIMENTAÇÃO
-  // =========================================
-
   async function movimentar(tipo) {
-
-    const produtoNome = document.getElementById('produto').value;
+    const produtoId = document.getElementById('produto').value;
     const quantidade = Number(document.getElementById('quantidade').value);
     const responsavel = document.getElementById('responsavel').value;
     const validade = document.getElementById('validade').value;
@@ -442,99 +660,83 @@ const firebaseConfig = {
     const assinatura = document.getElementById('assinatura').value;
     const observacoes = document.getElementById('observacoes').value;
 
-    if (!responsavel || !quantidade) {
-      alert('Preencha os campos obrigatórios.');
-      return;
+    if (!produtoId) { mostrarToast('Selecione um produto', 'error'); return; }
+    if (!quantidade || quantidade <= 0) { mostrarToast('Quantidade inválida', 'error'); return; }
+    if (!responsavel) { mostrarToast('Preencha o responsável', 'error'); return; }
+
+    const btn = event.target;
+    const originalText = btn.innerText;
+    btn.disabled = true;
+    btn.innerText = '...';
+
+    try {
+      const produtoRef = doc(db, 'produtos', produtoId);
+      await runTransaction(db, async (transaction) => {
+        const produtoDoc = await transaction.get(produtoRef);
+        const produto = produtoDoc.data();
+        let novoSaldo = produto.estoque;
+        
+        if (tipo === 'Entrada') {
+          novoSaldo += quantidade;
+        } else {
+          if (quantidade > produto.estoque) throw new Error('Estoque insuficiente');
+          novoSaldo -= quantidade;
+        }
+        
+        transaction.update(produtoRef, { 
+          estoque: novoSaldo, 
+          ultimaAtualizacao: new Date().toLocaleString('pt-BR') 
+        });
+        
+        await addDoc(collection(db, 'movimentacoes'), {
+          tipo, produto: produto.nome, quantidade, responsavel,
+          validade, recebimento, entrega, assinatura, observacoes,
+          data: new Date().toLocaleString('pt-BR'),
+          dataCriacao: serverTimestamp()
+        });
+      });
+      
+      mostrarToast(`${tipo} registrada!`, 'success');
+      document.getElementById('quantidade').value = '';
+      document.getElementById('responsavel').value = '';
+      document.getElementById('validade').value = '';
+      document.getElementById('recebimento').value = '';
+      document.getElementById('entrega').value = '';
+      document.getElementById('assinatura').value = '';
+      document.getElementById('observacoes').value = '';
+      
+      await Promise.all([atualizarTabelaEstoque(), carregarHistorico(), carregarProdutos()]);
+    } catch (error) {
+      mostrarToast(error.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerText = originalText;
     }
+  }
 
-    const produtoRef = doc(db, 'produtos', produtoNome);
-    const produtoSnap = await getDoc(produtoRef);
+  window.registrarEntrada = () => movimentar('Entrada');
+  window.registrarSaida = () => movimentar('Saída');
 
-    const produto = produtoSnap.data();
-
-    let novoSaldo = produto.estoque;
-
-    if (tipo === 'Entrada') {
-      novoSaldo += quantidade;
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      const isAdmin = await verificarAdmin(user.uid);
+      usuarioAtual = { uid: user.uid, email: user.email, isAdmin };
+      
+      document.getElementById('userName').textContent = user.email;
+      document.getElementById('userRole').textContent = isAdmin ? 'Admin' : 'Usuário';
+      if (isAdmin) document.getElementById('adminBtn').style.display = 'inline-block';
+      
+      document.getElementById('loginContainer').style.display = 'none';
+      document.getElementById('mainContent').style.display = 'block';
+      
+      await criarProdutosIniciais();
+      await Promise.all([carregarProdutos(), atualizarTabelaEstoque(), carregarHistorico()]);
+    } else {
+      usuarioAtual = null;
+      document.getElementById('loginContainer').style.display = 'block';
+      document.getElementById('mainContent').style.display = 'none';
     }
-
-    if (tipo === 'Saída') {
-
-      if (quantidade > produto.estoque) {
-        alert('Estoque insuficiente.');
-        return;
-      }
-
-      novoSaldo -= quantidade;
-    }
-
-    await updateDoc(produtoRef, {
-      estoque: novoSaldo,
-      ultimaAtualizacao: new Date().toLocaleString('pt-BR')
-    });
-
-    await addDoc(collection(db, 'movimentacoes'), {
-      tipo,
-      produto: produtoNome,
-      quantidade,
-      responsavel,
-      validade,
-      recebimento,
-      entrega,
-      assinatura,
-      observacoes,
-      saldo: novoSaldo,
-      data: new Date().toLocaleString('pt-BR'),
-      dataCriacao: serverTimestamp()
-    });
-
-    limparCampos();
-
-    await atualizarTabelaEstoque();
-    await carregarHistorico();
-  }
-
-  // =========================================
-  // BOTÕES
-  // =========================================
-
-  window.registrarEntrada = async () => {
-    await movimentar('Entrada');
-  }
-
-  window.registrarSaida = async () => {
-    await movimentar('Saída');
-  }
-
-  // =========================================
-  // LIMPAR CAMPOS
-  // =========================================
-
-  function limparCampos() {
-
-    document.getElementById('quantidade').value = '';
-    document.getElementById('responsavel').value = '';
-    document.getElementById('validade').value = '';
-    document.getElementById('recebimento').value = '';
-    document.getElementById('entrega').value = '';
-    document.getElementById('assinatura').value = '';
-    document.getElementById('observacoes').value = '';
-  }
-
-  // =========================================
-  // INICIAR SISTEMA
-  // =========================================
-
-  async function iniciarSistema() {
-
-    await criarProdutosIniciais();
-    await carregarProdutos();
-    await atualizarTabelaEstoque();
-    await carregarHistorico();
-  }
-
-  iniciarSistema();
-
+  });
 </script>
 
 </body>
