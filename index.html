@@ -115,7 +115,6 @@
       background: #fd7e14;
     }
 
-    /* TABELAS - OCUPAM 100% DA LARGURA */
     .tabela-container {
       width: 100%;
       overflow-x: auto;
@@ -124,7 +123,7 @@
 
     table {
       width: 100%;
-      min-width: 600px;
+      min-width: 500px;
       border-collapse: collapse;
       background: white;
     }
@@ -134,7 +133,6 @@
       text-align: left;
       font-size: 13px;
       border-bottom: 1px solid #ddd;
-      white-space: nowrap;
     }
 
     th {
@@ -143,26 +141,7 @@
       font-weight: bold;
     }
 
-    /* Em telas pequenas, permite rolagem mas mantém largura total */
     @media (max-width: 768px) {
-      .tabela-container {
-        margin: 0 -8px;
-        width: calc(100% + 16px);
-        padding: 0 8px;
-      }
-      
-      table {
-        min-width: 500px;
-      }
-      
-      th, td {
-        padding: 10px 6px;
-        font-size: 12px;
-      }
-    }
-
-    /* Em telas muito pequenas, reduz fonte */
-    @media (max-width: 480px) {
       th, td {
         padding: 8px 4px;
         font-size: 11px;
@@ -181,7 +160,6 @@
       font-size: 11px;
       font-weight: bold;
       display: inline-block;
-      white-space: nowrap;
     }
 
     .entrada { background: #198754; }
@@ -198,7 +176,6 @@
       border-radius: 8px;
       z-index: 1000;
       animation: fadeIn 0.3s ease;
-      white-space: nowrap;
     }
 
     .toast.success { background: #198754; }
@@ -209,70 +186,88 @@
       to { opacity: 1; bottom: 20px; }
     }
 
+    /* Login Screen */
     .login-container {
-      max-width: 400px;
-      margin: 50px auto;
-      background: white;
-      padding: 24px;
-      border-radius: 14px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    }
-
-    .login-container h2 {
-      margin-bottom: 20px;
-      color: #1f4e78;
-    }
-
-    .login-btn {
-      background: #1f4e78;
-      width: 100%;
-      margin-top: 15px;
-    }
-
-    .user-info {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      padding: 12px;
-      background: #e9ecef;
-      border-radius: 8px;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .user-info span {
-      font-weight: bold;
-      color: #1f4e78;
-    }
-
-    .modal {
-      display: none;
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.5);
-      z-index: 1001;
+      background: linear-gradient(135deg, #1f4e78 0%, #2c3e50 100%);
+      display: flex;
       justify-content: center;
       align-items: center;
-    }
-
-    .modal-content {
-      background: white;
+      z-index: 2000;
       padding: 20px;
-      border-radius: 14px;
-      width: 90%;
-      max-width: 500px;
-      max-height: 80vh;
-      overflow-y: auto;
     }
 
-    .close {
-      float: right;
-      cursor: pointer;
+    .login-box {
+      background: white;
+      padding: 32px 24px;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .login-box h2 {
+      text-align: center;
+      margin-bottom: 24px;
       font-size: 24px;
+      color: #1f4e78;
+    }
+
+    .login-box input {
+      margin: 8px 0;
+    }
+
+    .login-box button {
+      margin-top: 16px;
+      background: #1f4e78;
+    }
+
+    /* User Bar */
+    .user-bar {
+      background: #2c3e50;
+      color: white;
+      padding: 12px 16px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .user-role {
+      background: #e74c3c;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .user-role.admin {
+      background: #27ae60;
+    }
+
+    .btn-logout {
+      background: #e74c3c;
+      padding: 6px 16px;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      width: auto;
     }
 
     .filtro {
@@ -289,38 +284,42 @@
       margin-bottom: 15px;
     }
   </style>
+
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
+<!-- Login Screen -->
 <div id="loginContainer" class="login-container">
-  <h2>🔐 Controle de Estoque</h2>
-  <div>
-    <label>Email</label>
-    <input type="email" id="loginEmail" placeholder="seu@email.com">
+  <div class="login-box">
+    <h2>📦 Controle de Estoque</h2>
+    <input type="text" id="loginUser" placeholder="Usuário" autocomplete="off">
+    <input type="password" id="loginPassword" placeholder="Senha">
+    <button onclick="fazerLogin()">Entrar</button>
+    <div style="text-align:center; margin-top:16px; font-size:12px; color:#666;">
+      👑 Admin: admin / admin123<br>
+      👤 Usuário: user / user123
+    </div>
+    <div id="loginError" style="color:#e74c3c; text-align:center; margin-top:12px; font-size:13px;"></div>
   </div>
-  <div style="margin-top: 15px;">
-    <label>Senha</label>
-    <input type="password" id="loginSenha" placeholder="********">
-  </div>
-  <button class="login-btn" onclick="fazerLogin()">Entrar</button>
 </div>
 
-<div id="mainContent" style="display: none;">
+<!-- Main Application -->
+<div id="mainApp" style="display:none;">
   <div class="container">
-    <div class="user-info">
-      <div>👋 Olá, <span id="userName"></span>! <span style="font-size: 12px;">(<span id="userRole"></span>)</span></div>
-      <div>
-        <button class="admin-btn" id="adminBtn" onclick="abrirModalAdmin()" style="display: none;">
-          👑 Admins
-        </button>
-        <button class="logout-btn" onclick="fazerLogout()">Sair</button>
+    <div class="user-bar">
+      <div class="user-info">
+        <span>👋 Olá, <strong id="userNameDisplay"></strong></span>
+        <span id="userRoleDisplay" class="user-role"></span>
       </div>
+      <button class="btn-logout" onclick="logout()">🚪 Sair</button>
     </div>
 
     <h1>📦 Controle de Estoque - Produtos de Limpeza</h1>
 
     <div class="card">
-      <h2 style="margin-bottom: 16px;">➕ Movimentação</h2>
+      <h2>➕ Movimentação</h2>
 
       <div class="grid">
         <div>
@@ -365,8 +364,8 @@
       </div>
 
       <div class="buttons">
-        <button class="entrada-btn" onclick="registrarEntrada()">Registrar Entrada</button>
-        <button class="saida-btn" onclick="registrarSaida()">Registrar Saída</button>
+        <button class="entrada-btn" id="btnEntrada" onclick="registrarEntrada()">Registrar Entrada</button>
+        <button class="saida-btn" id="btnSaida" onclick="registrarSaida()">Registrar Saída</button>
       </div>
     </div>
 
@@ -376,106 +375,122 @@
         <input type="text" id="filtroProduto" placeholder="🔍 Filtrar produto..." onkeyup="filtrarEstoque()">
       </div>
       <div class="tabela-container">
-        <table>
+         <table>
           <thead>
-            <tr>
-              <th>Produto</th>
-              <th>Saldo</th>
-              <th>Atualização</th>
-            </tr>
+            <tr><th>Produto</th><th>Saldo</th><th>Atualização</th></tr>
           </thead>
           <tbody id="estoqueTabela"></tbody>
-        </table>
+         </table>
       </div>
     </div>
 
     <div class="card">
       <h2>📜 Histórico</h2>
       <div class="tabela-container">
-        <table>
+         <table>
           <thead>
-            <tr>
-              <th>Tipo</th>
-              <th>Produto</th>
-              <th>Qtd</th>
-              <th>Responsável</th>
-              <th>Data</th>
-              <th>Obs</th>
-            </tr>
+            <tr><th>Tipo</th><th>Produto</th><th>Qtd</th><th>Responsável</th><th>Data</th><th>Obs</th></tr>
           </thead>
           <tbody id="historicoTabela"></tbody>
-        </table>
+         </table>
       </div>
     </div>
   </div>
 </div>
 
-<div id="adminModal" class="modal">
-  <div class="modal-content">
-    <span class="close" onclick="fecharModalAdmin()">&times;</span>
-    <h3>👑 Gerenciar Admins</h3>
-    
-    <div style="margin-bottom: 20px;">
-      <label>Nome completo</label>
-      <input type="text" id="novoAdminNome" placeholder="João Silva">
-      <label style="margin-top: 10px;">Email</label>
-      <input type="email" id="novoAdminEmail" placeholder="admin@exemplo.com">
-      <label style="margin-top: 10px;">Senha</label>
-      <input type="password" id="novoAdminSenha" placeholder="********">
-      <button class="admin-btn" onclick="cadastrarAdmin()" style="margin-top: 10px; width: 100%;">
-        Cadastrar Admin
-      </button>
-    </div>
-    
-    <hr>
-    <h4>Administradores</h4>
-    <div id="listaAdmins" style="max-height: 300px; overflow-y: auto; margin-top: 10px;"></div>
-  </div>
-</div>
-
-<script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-  import { 
-    getAuth, 
-    signInWithEmailAndPassword, 
-    signOut, 
-    onAuthStateChanged,
-    createUserWithEmailAndPassword
-  } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-  import {
-    getFirestore,
-    collection,
-    getDocs,
-    addDoc,
-    updateDoc,
-    doc,
-    getDoc,
-    setDoc,
-    query,
-    orderBy,
-    runTransaction,
-    serverTimestamp,
-    deleteDoc
-  } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-
-  // 🔴 COLOQUE AQUI SUAS CONFIGURAÇÕES DO FIREBASE 🔴
+<script>
+  // Configuração do Firebase
   const firebaseConfig = {
-    apiKey: "SUA_API_KEY",
-    authDomain: "SEU_PROJETO.firebaseapp.com",
-    projectId: "SEU_PROJETO",
-    storageBucket: "SEU_PROJETO.firebasestorage.app",
-    messagingSenderId: "SEU_NUMERO",
-    appId: "SEU_APP_ID"
+    apiKey: "AIzaSyDyQmPBYiwC_MqlQWyGnU95Ld8Y-kgd8GA",
+    authDomain: "estoquelimpeza-d22f2.firebaseapp.com",
+    databaseURL: "https://estoquelimpeza-d22f2-default-rtdb.firebaseio.com",
+    projectId: "estoquelimpeza-d22f2",
+    storageBucket: "estoquelimpeza-d22f2.firebasestorage.app",
+    messagingSenderId: "637980743711",
+    appId: "1:637980743711:web:2773e86c1ca64cc9229d2a"
   };
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
-  let usuarioAtual = null;
-  let produtosCache = [];
-  let historicoCache = [];
+  // =========================================
+  // AUTENTICAÇÃO (igual ao código referência)
+  // =========================================
+  let currentUser = null;
+  const users = {
+    'admin': { password: 'admin123', role: 'admin', name: 'Administrador' },
+    'user': { password: 'user123', role: 'user', name: 'Usuário' }
+  };
 
+  function fazerLogin() {
+    const username = document.getElementById('loginUser').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const user = users[username];
+    
+    if (user && user.password === password) {
+      currentUser = { username, role: user.role, name: user.name };
+      sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+      
+      document.getElementById('loginContainer').style.display = 'none';
+      document.getElementById('mainApp').style.display = 'block';
+      document.getElementById('userNameDisplay').textContent = currentUser.name;
+      
+      const roleSpan = document.getElementById('userRoleDisplay');
+      roleSpan.textContent = currentUser.role === 'admin' ? '👑 ADMIN' : '👤 USUÁRIO';
+      roleSpan.classList.toggle('admin', currentUser.role === 'admin');
+      
+      aplicarRestricoes();
+      document.getElementById('loginError').textContent = '';
+    } else {
+      document.getElementById('loginError').textContent = 'Usuário ou senha inválidos!';
+    }
+  }
+
+  function logout() {
+    currentUser = null;
+    sessionStorage.removeItem('currentUser');
+    document.getElementById('loginContainer').style.display = 'flex';
+    document.getElementById('mainApp').style.display = 'none';
+  }
+
+  function aplicarRestricoes() {
+    const isAdmin = currentUser?.role === 'admin';
+    const btnEntrada = document.getElementById('btnEntrada');
+    const btnSaida = document.getElementById('btnSaida');
+    const inputs = document.querySelectorAll('#mainApp input, #mainApp select, #mainApp textarea');
+    
+    if (!isAdmin) {
+      if (btnEntrada) btnEntrada.disabled = true;
+      if (btnSaida) btnSaida.disabled = true;
+      inputs.forEach(input => { 
+        if (input.id !== 'filtroProduto' && input.id !== 'pesquisa') {
+          input.disabled = true;
+        }
+      });
+    } else {
+      if (btnEntrada) btnEntrada.disabled = false;
+      if (btnSaida) btnSaida.disabled = false;
+      inputs.forEach(input => { input.disabled = false; });
+    }
+  }
+
+  function verificarSessao() {
+    const saved = sessionStorage.getItem('currentUser');
+    if (saved) {
+      currentUser = JSON.parse(saved);
+      document.getElementById('loginContainer').style.display = 'none';
+      document.getElementById('mainApp').style.display = 'block';
+      document.getElementById('userNameDisplay').textContent = currentUser.name;
+      const roleSpan = document.getElementById('userRoleDisplay');
+      roleSpan.textContent = currentUser.role === 'admin' ? '👑 ADMIN' : '👤 USUÁRIO';
+      roleSpan.classList.toggle('admin', currentUser.role === 'admin');
+      aplicarRestricoes();
+    }
+  }
+
+  // =========================================
+  // DADOS INICIAIS
+  // =========================================
   const produtosIniciais = [
     { nome: 'Água Sanitária', estoque: 12 },
     { nome: 'Álcool 70', estoque: 22 },
@@ -493,6 +508,11 @@
     { nome: 'Saco de Lixo 30L', estoque: 470 }
   ];
 
+  let produtosCache = [];
+
+  // =========================================
+  // FUNÇÕES DO SISTEMA
+  // =========================================
   function mostrarToast(mensagem, tipo = 'info') {
     const toast = document.createElement('div');
     toast.className = `toast ${tipo}`;
@@ -501,135 +521,34 @@
     setTimeout(() => toast.remove(), 3000);
   }
 
-  async function verificarAdmin(uid) {
-    const adminDoc = await getDoc(doc(db, 'admins', uid));
-    return adminDoc.exists();
-  }
-
-  async function buscarNomeUsuario(uid) {
-    const adminDoc = await getDoc(doc(db, 'admins', uid));
-    if (adminDoc.exists()) {
-      return adminDoc.data().nome || adminDoc.data().email.split('@')[0];
-    }
-    return uid.substring(0, 8);
-  }
-
-  window.fazerLogin = async function() {
-    const email = document.getElementById('loginEmail').value;
-    const senha = document.getElementById('loginSenha').value;
-    if (!email || !senha) {
-      mostrarToast('Preencha email e senha', 'error');
-      return;
-    }
-    try {
-      await signInWithEmailAndPassword(auth, email, senha);
-      mostrarToast('Login realizado!', 'success');
-    } catch (error) {
-      mostrarToast('Email ou senha inválidos', 'error');
-    }
-  }
-
-  window.fazerLogout = async function() {
-    await signOut(auth);
-  }
-
-  window.cadastrarAdmin = async function() {
-    if (!usuarioAtual?.isAdmin) {
-      mostrarToast('Acesso negado', 'error');
-      return;
-    }
-    const nome = document.getElementById('novoAdminNome').value;
-    const email = document.getElementById('novoAdminEmail').value;
-    const senha = document.getElementById('novoAdminSenha').value;
-    
-    if (!nome || !email || !senha) {
-      mostrarToast('Preencha todos os campos', 'error');
-      return;
-    }
-    
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
-      await setDoc(doc(db, 'admins', userCredential.user.uid), {
-        nome: nome,
-        email: email,
-        criadoPor: usuarioAtual.uid,
-        criadoPorNome: usuarioAtual.nome,
-        criadoEm: serverTimestamp()
-      });
-      mostrarToast(`Admin ${nome} cadastrado!`, 'success');
-      document.getElementById('novoAdminNome').value = '';
-      document.getElementById('novoAdminEmail').value = '';
-      document.getElementById('novoAdminSenha').value = '';
-      carregarListaAdmins();
-    } catch (error) {
-      mostrarToast(error.message, 'error');
-    }
-  }
-
-  async function carregarListaAdmins() {
-    const snapshot = await getDocs(collection(db, 'admins'));
-    const listaDiv = document.getElementById('listaAdmins');
-    listaDiv.innerHTML = '';
-    for (const doc of snapshot.docs) {
-      const admin = doc.data();
-      const div = document.createElement('div');
-      div.style.padding = '8px';
-      div.style.borderBottom = '1px solid #ddd';
-      div.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <strong>${admin.nome || admin.email}</strong><br>
-            <small style="color: #666;">${admin.email}</small>
-          </div>
-          ${doc.id !== usuarioAtual?.uid ? `<button onclick="removerAdmin('${doc.id}')" style="background:#dc3545; padding:4px 8px;">Remover</button>` : '<span style="color:#666;">(Você)</span>'}
-        </div>
-      `;
-      listaDiv.appendChild(div);
-    }
-  }
-
-  window.removerAdmin = async function(uid) {
-    if (confirm('Remover este administrador?')) {
-      await deleteDoc(doc(db, 'admins', uid));
-      mostrarToast('Admin removido', 'success');
-      carregarListaAdmins();
-    }
-  }
-
-  window.abrirModalAdmin = function() {
-    if (usuarioAtual?.isAdmin) {
-      document.getElementById('adminModal').style.display = 'flex';
-      carregarListaAdmins();
-    }
-  }
-
-  window.fecharModalAdmin = function() {
-    document.getElementById('adminModal').style.display = 'none';
-  }
-
   async function criarProdutosIniciais() {
-    const snapshot = await getDocs(collection(db, 'produtos'));
-    if (snapshot.empty) {
+    const snapshot = await db.ref("produtos").once("value");
+    if (!snapshot.exists()) {
       for (const produto of produtosIniciais) {
         const id = produto.nome.replace(/\s+/g, '_').toLowerCase();
-        await setDoc(doc(db, 'produtos', id), {
+        await db.ref(`produtos/${id}`).set({
           id: id,
           nome: produto.nome,
           estoque: produto.estoque,
           ultimaAtualizacao: new Date().toLocaleString('pt-BR')
         });
       }
+      mostrarToast('Produtos iniciais carregados!', 'success');
     }
   }
 
   async function carregarProdutos() {
     const select = document.getElementById('produto');
-    const snapshot = await getDocs(collection(db, 'produtos'));
-    produtosCache = [];
-    snapshot.forEach(doc => produtosCache.push({ id: doc.id, ...doc.data() }));
-    produtosCache.sort((a, b) => a.nome.localeCompare(b.nome));
+    const snapshot = await db.ref("produtos").once("value");
+    const produtos = [];
+    snapshot.forEach(child => {
+      produtos.push(child.val());
+    });
+    produtosCache = produtos;
+    produtos.sort((a, b) => a.nome.localeCompare(b.nome));
+    
     select.innerHTML = '';
-    produtosCache.forEach(produto => {
+    produtos.forEach(produto => {
       const option = document.createElement('option');
       option.value = produto.id;
       option.textContent = `${produto.nome} (${produto.estoque})`;
@@ -638,9 +557,11 @@
   }
 
   async function atualizarTabelaEstoque() {
-    const snapshot = await getDocs(collection(db, 'produtos'));
+    const snapshot = await db.ref("produtos").once("value");
     const produtos = [];
-    snapshot.forEach(doc => produtos.push({ id: doc.id, ...doc.data() }));
+    snapshot.forEach(child => {
+      produtos.push(child.val());
+    });
     produtosCache = produtos;
     produtos.sort((a, b) => a.nome.localeCompare(b.nome));
     
@@ -674,14 +595,15 @@
   }
 
   async function carregarHistorico() {
-    const q = query(collection(db, 'movimentacoes'), orderBy('dataCriacao', 'desc'));
-    const snapshot = await getDocs(q);
-    historicoCache = [];
-    snapshot.forEach(doc => historicoCache.push(doc.data()));
+    const snapshot = await db.ref("movimentacoes").orderByChild("dataCriacao").once("value");
+    const movimentacoes = [];
+    snapshot.forEach(child => {
+      movimentacoes.unshift(child.val());
+    });
     
     const tabela = document.getElementById('historicoTabela');
     tabela.innerHTML = '';
-    historicoCache.forEach(mov => {
+    movimentacoes.forEach(mov => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td><span class="badge ${mov.tipo === 'Entrada' ? 'entrada' : 'saida'}">${mov.tipo}</span></td>
@@ -693,6 +615,14 @@
       `;
       tabela.appendChild(tr);
     });
+  }
+
+  window.registrarEntrada = async function() {
+    await movimentar('Entrada');
+  }
+
+  window.registrarSaida = async function() {
+    await movimentar('Saída');
   }
 
   async function movimentar(tipo) {
@@ -715,32 +645,29 @@
     btn.innerText = '...';
 
     try {
-      const produtoRef = doc(db, 'produtos', produtoId);
-      await runTransaction(db, async (transaction) => {
-        const produtoDoc = await transaction.get(produtoRef);
-        const produto = produtoDoc.data();
-        let novoSaldo = produto.estoque;
-        
-        if (tipo === 'Entrada') {
-          novoSaldo += quantidade;
-        } else {
-          if (quantidade > produto.estoque) throw new Error('Estoque insuficiente');
-          novoSaldo -= quantidade;
-        }
-        
-        transaction.update(produtoRef, { 
-          estoque: novoSaldo, 
-          ultimaAtualizacao: new Date().toLocaleString('pt-BR') 
-        });
-        
-        await addDoc(collection(db, 'movimentacoes'), {
-          tipo, produto: produto.nome, quantidade, responsavel,
-          validade, recebimento, entrega, assinatura, observacoes,
-          data: new Date().toLocaleString('pt-BR'),
-          dataCriacao: serverTimestamp(),
-          usuario: usuarioAtual.nome,
-          usuarioEmail: usuarioAtual.email
-        });
+      const produtoRef = db.ref(`produtos/${produtoId}`);
+      const snapshot = await produtoRef.once("value");
+      const produto = snapshot.val();
+      let novoSaldo = produto.estoque;
+      
+      if (tipo === 'Entrada') {
+        novoSaldo += quantidade;
+      } else {
+        if (quantidade > produto.estoque) throw new Error('Estoque insuficiente');
+        novoSaldo -= quantidade;
+      }
+      
+      await produtoRef.update({ 
+        estoque: novoSaldo, 
+        ultimaAtualizacao: new Date().toLocaleString('pt-BR') 
+      });
+      
+      await db.ref("movimentacoes").push({
+        tipo, produto: produto.nome, quantidade, responsavel,
+        validade, recebimento, entrega, assinatura, observacoes,
+        data: new Date().toLocaleString('pt-BR'),
+        dataCriacao: Date.now(),
+        usuario: currentUser.name
       });
       
       mostrarToast(`${tipo} registrada!`, 'success');
@@ -761,41 +688,28 @@
     }
   }
 
-  window.registrarEntrada = () => movimentar('Entrada');
-  window.registrarSaida = () => movimentar('Saída');
+  async function iniciar() {
+    await criarProdutosIniciais();
+    await Promise.all([carregarProdutos(), atualizarTabelaEstoque(), carregarHistorico()]);
+  }
 
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      const isAdmin = await verificarAdmin(user.uid);
-      let nome = user.email.split('@')[0];
-      
-      if (isAdmin) {
-        const adminDoc = await getDoc(doc(db, 'admins', user.uid));
-        if (adminDoc.exists() && adminDoc.data().nome) {
-          nome = adminDoc.data().nome;
-        }
-      }
-      
-      usuarioAtual = { uid: user.uid, email: user.email, isAdmin, nome };
-      
-      document.getElementById('userName').textContent = nome;
-      document.getElementById('userRole').textContent = isAdmin ? 'Admin' : 'Usuário';
-      if (isAdmin) document.getElementById('adminBtn').style.display = 'inline-block';
-      
-      document.getElementById('loginContainer').style.display = 'none';
-      document.getElementById('mainContent').style.display = 'block';
-      
-      await criarProdutosIniciais();
-      await Promise.all([carregarProdutos(), atualizarTabelaEstoque(), carregarHistorico()]);
-    } else {
-      usuarioAtual = null;
-      document.getElementById('loginContainer').style.display = 'block';
-      document.getElementById('mainContent').style.display = 'none';
-      document.getElementById('loginEmail').value = '';
-      document.getElementById('loginSenha').value = '';
-    }
-  });
+  // Inicializar
+  verificarSessao();
+  if (document.getElementById('mainApp').style.display !== 'none') {
+    iniciar();
+  }
+  
+  // Expor funções globalmente
+  window.fazerLogin = fazerLogin;
+  window.logout = logout;
+  window.registrarEntrada = registrarEntrada;
+  window.registrarSaida = registrarSaida;
+  window.filtrarEstoque = filtrarEstoque;
+  
+  // Se já estiver logado, iniciar
+  if (currentUser) {
+    iniciar();
+  }
 </script>
-
 </body>
 </html>
