@@ -20,8 +20,9 @@
     }
 
     .container {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
+      width: 100%;
     }
 
     h1 {
@@ -34,8 +35,9 @@
       background: white;
       padding: 16px;
       border-radius: 14px;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      width: 100%;
     }
 
     .grid {
@@ -113,25 +115,58 @@
       background: #fd7e14;
     }
 
+    /* TABELAS - OCUPAM 100% DA LARGURA */
+    .tabela-container {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
     table {
       width: 100%;
+      min-width: 600px;
       border-collapse: collapse;
-      margin-top: 15px;
       background: white;
-      display: block;
-      overflow-x: auto;
     }
 
     th, td {
-      padding: 10px;
+      padding: 12px 8px;
       text-align: left;
       font-size: 13px;
       border-bottom: 1px solid #ddd;
+      white-space: nowrap;
     }
 
     th {
       background: #1f4e78;
       color: white;
+      font-weight: bold;
+    }
+
+    /* Em telas pequenas, permite rolagem mas mantém largura total */
+    @media (max-width: 768px) {
+      .tabela-container {
+        margin: 0 -8px;
+        width: calc(100% + 16px);
+        padding: 0 8px;
+      }
+      
+      table {
+        min-width: 500px;
+      }
+      
+      th, td {
+        padding: 10px 6px;
+        font-size: 12px;
+      }
+    }
+
+    /* Em telas muito pequenas, reduz fonte */
+    @media (max-width: 480px) {
+      th, td {
+        padding: 8px 4px;
+        font-size: 11px;
+      }
     }
 
     .baixo {
@@ -146,6 +181,7 @@
       font-size: 11px;
       font-weight: bold;
       display: inline-block;
+      white-space: nowrap;
     }
 
     .entrada { background: #198754; }
@@ -162,6 +198,7 @@
       border-radius: 8px;
       z-index: 1000;
       animation: fadeIn 0.3s ease;
+      white-space: nowrap;
     }
 
     .toast.success { background: #198754; }
@@ -228,6 +265,8 @@
       border-radius: 14px;
       width: 90%;
       max-width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
     }
 
     .close {
@@ -242,25 +281,12 @@
 
     .filtro input {
       width: 100%;
+      padding: 10px;
     }
 
-    @media (max-width: 768px) {
-      body {
-        padding: 12px;
-      }
-      
-      .card {
-        padding: 12px;
-      }
-      
-      th, td {
-        padding: 8px;
-        font-size: 12px;
-      }
-      
-      button {
-        padding: 10px 16px;
-      }
+    h2 {
+      font-size: 1.3rem;
+      margin-bottom: 15px;
     }
   </style>
 </head>
@@ -282,7 +308,7 @@
 <div id="mainContent" style="display: none;">
   <div class="container">
     <div class="user-info">
-      <div>👤 <span id="userName"></span> - <span id="userRole"></span></div>
+      <div>👋 Olá, <span id="userName"></span>! <span style="font-size: 12px;">(<span id="userRole"></span>)</span></div>
       <div>
         <button class="admin-btn" id="adminBtn" onclick="abrirModalAdmin()" style="display: none;">
           👑 Admins
@@ -349,7 +375,7 @@
       <div class="filtro">
         <input type="text" id="filtroProduto" placeholder="🔍 Filtrar produto..." onkeyup="filtrarEstoque()">
       </div>
-      <div style="overflow-x: auto;">
+      <div class="tabela-container">
         <table>
           <thead>
             <tr>
@@ -365,7 +391,7 @@
 
     <div class="card">
       <h2>📜 Histórico</h2>
-      <div style="overflow-x: auto;">
+      <div class="tabela-container">
         <table>
           <thead>
             <tr>
@@ -390,7 +416,9 @@
     <h3>👑 Gerenciar Admins</h3>
     
     <div style="margin-bottom: 20px;">
-      <label>Email do novo admin</label>
+      <label>Nome completo</label>
+      <input type="text" id="novoAdminNome" placeholder="João Silva">
+      <label style="margin-top: 10px;">Email</label>
       <input type="email" id="novoAdminEmail" placeholder="admin@exemplo.com">
       <label style="margin-top: 10px;">Senha</label>
       <input type="password" id="novoAdminSenha" placeholder="********">
@@ -432,13 +460,13 @@
 
   // 🔴 COLOQUE AQUI SUAS CONFIGURAÇÕES DO FIREBASE 🔴
   const firebaseConfig = {
-  apiKey: "AIzaSyBZrINLf5w3u_jdZSltZNX1zfBJQ5-dREg",
-  authDomain: "estoquelimpeza-88501.firebaseapp.com",
-  projectId: "estoquelimpeza-88501",
-  storageBucket: "estoquelimpeza-88501.firebasestorage.app",
-  messagingSenderId: "786386064285",
-  appId: "1:786386064285:web:861ab922e5372548edd574"
-};
+    apiKey: "SUA_API_KEY",
+    authDomain: "SEU_PROJETO.firebaseapp.com",
+    projectId: "SEU_PROJETO",
+    storageBucket: "SEU_PROJETO.firebasestorage.app",
+    messagingSenderId: "SEU_NUMERO",
+    appId: "SEU_APP_ID"
+  };
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
@@ -478,6 +506,14 @@
     return adminDoc.exists();
   }
 
+  async function buscarNomeUsuario(uid) {
+    const adminDoc = await getDoc(doc(db, 'admins', uid));
+    if (adminDoc.exists()) {
+      return adminDoc.data().nome || adminDoc.data().email.split('@')[0];
+    }
+    return uid.substring(0, 8);
+  }
+
   window.fazerLogin = async function() {
     const email = document.getElementById('loginEmail').value;
     const senha = document.getElementById('loginSenha').value;
@@ -502,20 +538,26 @@
       mostrarToast('Acesso negado', 'error');
       return;
     }
+    const nome = document.getElementById('novoAdminNome').value;
     const email = document.getElementById('novoAdminEmail').value;
     const senha = document.getElementById('novoAdminSenha').value;
-    if (!email || !senha) {
-      mostrarToast('Preencha email e senha', 'error');
+    
+    if (!nome || !email || !senha) {
+      mostrarToast('Preencha todos os campos', 'error');
       return;
     }
+    
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
       await setDoc(doc(db, 'admins', userCredential.user.uid), {
+        nome: nome,
         email: email,
         criadoPor: usuarioAtual.uid,
+        criadoPorNome: usuarioAtual.nome,
         criadoEm: serverTimestamp()
       });
-      mostrarToast('Admin cadastrado!', 'success');
+      mostrarToast(`Admin ${nome} cadastrado!`, 'success');
+      document.getElementById('novoAdminNome').value = '';
       document.getElementById('novoAdminEmail').value = '';
       document.getElementById('novoAdminSenha').value = '';
       carregarListaAdmins();
@@ -535,7 +577,10 @@
       div.style.borderBottom = '1px solid #ddd';
       div.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div><strong>${admin.email}</strong></div>
+          <div>
+            <strong>${admin.nome || admin.email}</strong><br>
+            <small style="color: #666;">${admin.email}</small>
+          </div>
           ${doc.id !== usuarioAtual?.uid ? `<button onclick="removerAdmin('${doc.id}')" style="background:#dc3545; padding:4px 8px;">Remover</button>` : '<span style="color:#666;">(Você)</span>'}
         </div>
       `;
@@ -692,7 +737,9 @@
           tipo, produto: produto.nome, quantidade, responsavel,
           validade, recebimento, entrega, assinatura, observacoes,
           data: new Date().toLocaleString('pt-BR'),
-          dataCriacao: serverTimestamp()
+          dataCriacao: serverTimestamp(),
+          usuario: usuarioAtual.nome,
+          usuarioEmail: usuarioAtual.email
         });
       });
       
@@ -720,9 +767,18 @@
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       const isAdmin = await verificarAdmin(user.uid);
-      usuarioAtual = { uid: user.uid, email: user.email, isAdmin };
+      let nome = user.email.split('@')[0];
       
-      document.getElementById('userName').textContent = user.email;
+      if (isAdmin) {
+        const adminDoc = await getDoc(doc(db, 'admins', user.uid));
+        if (adminDoc.exists() && adminDoc.data().nome) {
+          nome = adminDoc.data().nome;
+        }
+      }
+      
+      usuarioAtual = { uid: user.uid, email: user.email, isAdmin, nome };
+      
+      document.getElementById('userName').textContent = nome;
       document.getElementById('userRole').textContent = isAdmin ? 'Admin' : 'Usuário';
       if (isAdmin) document.getElementById('adminBtn').style.display = 'inline-block';
       
@@ -735,6 +791,8 @@
       usuarioAtual = null;
       document.getElementById('loginContainer').style.display = 'block';
       document.getElementById('mainContent').style.display = 'none';
+      document.getElementById('loginEmail').value = '';
+      document.getElementById('loginSenha').value = '';
     }
   });
 </script>
