@@ -321,6 +321,13 @@
       width: auto;
       margin-top: 0;
     }
+
+    /* Debug - mostrar dados carregados */
+    .debug-info {
+      font-size: 10px;
+      color: #666;
+      margin-top: 5px;
+    }
   </style>
 
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -423,9 +430,13 @@
         <input type="text" id="filtroProduto" placeholder="🔍 Filtrar produto..." onkeyup="filtrarEstoque()">
       </div>
       <div class="tabela-container">
-        </table>
+        <table id="tabelaEstoque">
           <thead>
-            <tr><th>Produto</th><th>Saldo</th><th>Atualização</th></tr>
+            <tr>
+              <th width="50%">Produto</th>
+              <th width="20%">Saldo</th>
+              <th width="30%">Atualização</th>
+            </tr>
           </thead>
           <tbody id="estoqueTabela"></tbody>
         </table>
@@ -435,9 +446,16 @@
     <div class="card">
       <h2>📜 Histórico</h2>
       <div class="tabela-container">
-        <table>
+        <table id="tabelaHistorico">
           <thead>
-            <tr><th>Tipo</th><th>Produto</th><th>Qtd</th><th>Responsável</th><th>Data</th><th>Obs</th></tr>
+            <tr>
+              <th>Tipo</th>
+              <th>Produto</th>
+              <th>Qtd</th>
+              <th>Responsável</th>
+              <th>Data</th>
+              <th>Obs</th>
+            </tr>
           </thead>
           <tbody id="historicoTabela"></tbody>
         </table>
@@ -509,22 +527,15 @@
     const btnEntrada = document.getElementById('btnEntrada');
     const btnSaida = document.getElementById('btnSaida');
     const novoProdutoGroup = document.getElementById('novoProdutoGroup');
-    const inputs = document.querySelectorAll('#mainApp input, #mainApp select, #mainApp textarea');
     
     if (!isAdmin) {
       if (btnEntrada) btnEntrada.disabled = true;
       if (btnSaida) btnSaida.disabled = true;
       if (novoProdutoGroup) novoProdutoGroup.style.display = 'none';
-      inputs.forEach(input => { 
-        if (input.id !== 'filtroProduto' && input.id !== 'pesquisa' && input.id !== 'novoProdutoNome') {
-          input.disabled = true;
-        }
-      });
     } else {
       if (btnEntrada) btnEntrada.disabled = false;
       if (btnSaida) btnSaida.disabled = false;
       if (novoProdutoGroup) novoProdutoGroup.style.display = 'block';
-      inputs.forEach(input => { input.disabled = false; });
     }
   }
 
@@ -641,7 +652,7 @@
           ultimaAtualizacao: new Date().toLocaleString('pt-BR')
         });
       }
-      mostrarToast('Produtos iniciais carregados!', 'success');
+      console.log('Produtos iniciais criados');
     }
   }
 
@@ -659,7 +670,8 @@
     produtos.forEach(produto => {
       const option = document.createElement('option');
       option.value = produto.id;
-      option.textContent = `${produto.nome} (${produto.estoque})`;
+      const estoqueAtual = produto.estoque !== undefined ? produto.estoque : 0;
+      option.textContent = `${produto.nome} (${estoqueAtual})`;
       select.appendChild(option);
     });
   }
@@ -668,22 +680,39 @@
     const snapshot = await db.ref("produtos").once("value");
     const produtos = [];
     snapshot.forEach(child => {
-      produtos.push(child.val());
+      const val = child.val();
+      produtos.push({
+        id: val.id,
+        nome: val.nome,
+        estoque: val.estoque !== undefined ? val.estoque : 0,
+        ultimaAtualizacao: val.ultimaAtualizacao || '-'
+      });
     });
     produtosCache = produtos;
     produtos.sort((a, b) => a.nome.localeCompare(b.nome));
     
     const tabela = document.getElementById('estoqueTabela');
     tabela.innerHTML = '';
+    
+    if (produtos.length === 0) {
+      tabela.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nenhum produto cadastrado</td></tr>';
+      return;
+    }
+    
     produtos.forEach(produto => {
       const tr = document.createElement('tr');
+      const estoqueValue = produto.estoque;
+      const isEstoqueBaixo = estoqueValue === 0;
+      
       tr.innerHTML = `
-        <td>${produto.nome}</td>
-        <td class="${produto.estoque === 0 ? 'baixo' : ''}">${produto.estoque}</td>
-        <td>${produto.ultimaAtualizacao || '-'}</td>
+        <td style="font-weight:500;">${produto.nome}</td>
+        <td class="${isEstoqueBaixo ? 'baixo' : ''}" style="text-align:center; font-weight:bold;">${estoqueValue}</td>
+        <td style="font-size:11px; color:#666;">${produto.ultimaAtualizacao}</td>
       `;
       tabela.appendChild(tr);
     });
+    
+    console.log('Tabela atualizada com', produtos.length, 'produtos');
   }
 
   window.filtrarEstoque = function() {
@@ -691,11 +720,12 @@
     const filtrados = produtosCache.filter(p => p.nome.toLowerCase().includes(filtro));
     const tabela = document.getElementById('estoqueTabela');
     tabela.innerHTML = '';
+    
     filtrados.forEach(produto => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${produto.nome}</td>
-        <td class="${produto.estoque === 0 ? 'baixo' : ''}">${produto.estoque}</td>
+        <td class="${produto.estoque === 0 ? 'baixo' : ''}" style="text-align:center; font-weight:bold;">${produto.estoque}</td>
         <td>${produto.ultimaAtualizacao || '-'}</td>
       `;
       tabela.appendChild(tr);
@@ -711,15 +741,21 @@
     
     const tabela = document.getElementById('historicoTabela');
     tabela.innerHTML = '';
+    
+    if (movimentacoes.length === 0) {
+      tabela.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nenhuma movimentação registrada</td></tr>';
+      return;
+    }
+    
     movimentacoes.forEach(mov => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td><span class="badge ${mov.tipo === 'Entrada' ? 'entrada' : 'saida'}">${mov.tipo}</span></td>
-        <td>${mov.produto}</td>
-        <td>${mov.quantidade}</td>
+        <td style="text-align:center;"><span class="badge ${mov.tipo === 'Entrada' ? 'entrada' : 'saida'}">${mov.tipo}</span></td>
+        <td>${mov.produto || '-'}</td>
+        <td style="text-align:center;">${mov.quantidade || '-'}</td>
         <td>${mov.responsavel || '-'}</td>
-        <td>${mov.data || '-'}</td>
-        <td>${mov.observacoes || '-'}</td>
+        <td style="font-size:11px;">${mov.data || '-'}</td>
+        <td style="font-size:11px;">${mov.observacoes || '-'}</td>
       `;
       tabela.appendChild(tr);
     });
@@ -756,12 +792,17 @@
       const produtoRef = db.ref(`produtos/${produtoId}`);
       const snapshot = await produtoRef.once("value");
       const produto = snapshot.val();
-      let novoSaldo = produto.estoque;
+      
+      if (!produto) {
+        throw new Error('Produto não encontrado');
+      }
+      
+      let novoSaldo = produto.estoque || 0;
       
       if (tipo === 'Entrada') {
         novoSaldo += quantidade;
       } else {
-        if (quantidade > produto.estoque) throw new Error('Estoque insuficiente');
+        if (quantidade > novoSaldo) throw new Error(`Estoque insuficiente. Disponível: ${novoSaldo}`);
         novoSaldo -= quantidade;
       }
       
@@ -771,14 +812,23 @@
       });
       
       await db.ref("movimentacoes").push({
-        tipo, produto: produto.nome, quantidade, responsavel,
-        validade, recebimento, entrega, assinatura, observacoes,
+        tipo, 
+        produto: produto.nome, 
+        quantidade, 
+        responsavel,
+        validade: validade || null,
+        recebimento: recebimento || null,
+        entrega: entrega || null,
+        assinatura: assinatura || null,
+        observacoes: observacoes || null,
         data: new Date().toLocaleString('pt-BR'),
         dataCriacao: Date.now(),
         usuario: currentUser.name
       });
       
-      mostrarToast(`${tipo} registrada!`, 'success');
+      mostrarToast(`${tipo} registrada! Novo saldo: ${novoSaldo}`, 'success');
+      
+      // Limpar campos
       document.getElementById('quantidade').value = '';
       document.getElementById('responsavel').value = '';
       document.getElementById('validade').value = '';
@@ -787,9 +837,12 @@
       document.getElementById('assinatura').value = '';
       document.getElementById('observacoes').value = '';
       
+      // Recarregar tudo
       await Promise.all([atualizarTabelaEstoque(), carregarHistorico(), carregarProdutos()]);
+      
     } catch (error) {
       mostrarToast(error.message, 'error');
+      console.error(error);
     } finally {
       btn.disabled = false;
       btn.innerText = originalText;
@@ -797,8 +850,14 @@
   }
 
   async function iniciar() {
-    await criarProdutosIniciais();
-    await Promise.all([carregarProdutos(), atualizarTabelaEstoque(), carregarHistorico()]);
+    try {
+      await criarProdutosIniciais();
+      await Promise.all([carregarProdutos(), atualizarTabelaEstoque(), carregarHistorico()]);
+      console.log('Sistema iniciado com sucesso');
+    } catch (error) {
+      console.error('Erro ao iniciar:', error);
+      mostrarToast('Erro ao carregar dados', 'error');
+    }
   }
 
   // Expor funções globalmente
