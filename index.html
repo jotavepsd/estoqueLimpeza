@@ -115,6 +115,12 @@
       background: #fd7e14;
     }
 
+    .novo-produto-btn {
+      background: #17a2b8;
+      width: auto;
+      margin-top: 8px;
+    }
+
     .tabela-container {
       width: 100%;
       overflow-x: auto;
@@ -180,6 +186,7 @@
 
     .toast.success { background: #198754; }
     .toast.error { background: #dc3545; }
+    .toast.info { background: #17a2b8; }
 
     @keyframes fadeIn {
       from { opacity: 0; bottom: 0; }
@@ -283,6 +290,37 @@
       font-size: 1.3rem;
       margin-bottom: 15px;
     }
+
+    /* Grupo de novo produto */
+    .novo-produto-group {
+      background: #e8f4f8;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      border-left: 4px solid #17a2b8;
+    }
+
+    .novo-produto-group label {
+      margin-bottom: 4px;
+      color: #0c5460;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .input-group input {
+      flex: 1;
+      min-width: 150px;
+    }
+
+    .input-group button {
+      width: auto;
+      margin-top: 0;
+    }
   </style>
 
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -320,6 +358,16 @@
 
     <div class="card">
       <h2>➕ Movimentação</h2>
+
+      <!-- NOVO PRODUTO - Área para cadastrar novos produtos -->
+      <div class="novo-produto-group" id="novoProdutoGroup">
+        <label>🆕 Cadastrar Novo Produto</label>
+        <div class="input-group">
+          <input type="text" id="novoProdutoNome" placeholder="Nome do novo produto" maxlength="50">
+          <button class="novo-produto-btn" onclick="cadastrarNovoProduto()">➕ Adicionar Produto</button>
+        </div>
+        <small style="color: #666; font-size: 11px;">Digite o nome do produto e clique em adicionar. Ele aparecerá na lista abaixo.</small>
+      </div>
 
       <div class="grid">
         <div>
@@ -375,24 +423,24 @@
         <input type="text" id="filtroProduto" placeholder="🔍 Filtrar produto..." onkeyup="filtrarEstoque()">
       </div>
       <div class="tabela-container">
-         <table>
+        </table>
           <thead>
             <tr><th>Produto</th><th>Saldo</th><th>Atualização</th></tr>
           </thead>
           <tbody id="estoqueTabela"></tbody>
-         </table>
+        </table>
       </div>
     </div>
 
     <div class="card">
       <h2>📜 Histórico</h2>
       <div class="tabela-container">
-         <table>
+        <table>
           <thead>
             <tr><th>Tipo</th><th>Produto</th><th>Qtd</th><th>Responsável</th><th>Data</th><th>Obs</th></tr>
           </thead>
           <tbody id="historicoTabela"></tbody>
-         </table>
+        </table>
       </div>
     </div>
   </div>
@@ -414,7 +462,7 @@
   const db = firebase.database();
 
   // =========================================
-  // AUTENTICAÇÃO (igual ao código referência)
+  // AUTENTICAÇÃO
   // =========================================
   let currentUser = null;
   const users = {
@@ -441,6 +489,9 @@
       
       aplicarRestricoes();
       document.getElementById('loginError').textContent = '';
+      
+      // Iniciar o sistema após login
+      iniciar();
     } else {
       document.getElementById('loginError').textContent = 'Usuário ou senha inválidos!';
     }
@@ -457,19 +508,22 @@
     const isAdmin = currentUser?.role === 'admin';
     const btnEntrada = document.getElementById('btnEntrada');
     const btnSaida = document.getElementById('btnSaida');
+    const novoProdutoGroup = document.getElementById('novoProdutoGroup');
     const inputs = document.querySelectorAll('#mainApp input, #mainApp select, #mainApp textarea');
     
     if (!isAdmin) {
       if (btnEntrada) btnEntrada.disabled = true;
       if (btnSaida) btnSaida.disabled = true;
+      if (novoProdutoGroup) novoProdutoGroup.style.display = 'none';
       inputs.forEach(input => { 
-        if (input.id !== 'filtroProduto' && input.id !== 'pesquisa') {
+        if (input.id !== 'filtroProduto' && input.id !== 'pesquisa' && input.id !== 'novoProdutoNome') {
           input.disabled = true;
         }
       });
     } else {
       if (btnEntrada) btnEntrada.disabled = false;
       if (btnSaida) btnSaida.disabled = false;
+      if (novoProdutoGroup) novoProdutoGroup.style.display = 'block';
       inputs.forEach(input => { input.disabled = false; });
     }
   }
@@ -485,6 +539,7 @@
       roleSpan.textContent = currentUser.role === 'admin' ? '👑 ADMIN' : '👤 USUÁRIO';
       roleSpan.classList.toggle('admin', currentUser.role === 'admin');
       aplicarRestricoes();
+      iniciar();
     }
   }
 
@@ -519,6 +574,59 @@
     toast.textContent = mensagem;
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 3000);
+  }
+
+  // CADASTRAR NOVO PRODUTO
+  window.cadastrarNovoProduto = async function() {
+    if (currentUser?.role !== 'admin') {
+      mostrarToast('Apenas administradores podem cadastrar produtos!', 'error');
+      return;
+    }
+    
+    const nomeProduto = document.getElementById('novoProdutoNome').value.trim();
+    
+    if (!nomeProduto) {
+      mostrarToast('Digite o nome do produto', 'error');
+      return;
+    }
+    
+    // Verificar se já existe
+    const snapshot = await db.ref("produtos").once("value");
+    let existe = false;
+    snapshot.forEach(child => {
+      if (child.val().nome.toLowerCase() === nomeProduto.toLowerCase()) {
+        existe = true;
+      }
+    });
+    
+    if (existe) {
+      mostrarToast('Este produto já existe!', 'error');
+      return;
+    }
+    
+    // Criar ID único baseado no nome
+    const id = nomeProduto.replace(/\s+/g, '_').toLowerCase();
+    
+    try {
+      await db.ref(`produtos/${id}`).set({
+        id: id,
+        nome: nomeProduto,
+        estoque: 0,
+        ultimaAtualizacao: new Date().toLocaleString('pt-BR'),
+        dataCadastro: Date.now()
+      });
+      
+      mostrarToast(`Produto "${nomeProduto}" cadastrado com sucesso!`, 'success');
+      document.getElementById('novoProdutoNome').value = '';
+      
+      // Recarregar a lista de produtos
+      await carregarProdutos();
+      await atualizarTabelaEstoque();
+      
+    } catch (error) {
+      mostrarToast('Erro ao cadastrar produto', 'error');
+      console.error(error);
+    }
   }
 
   async function criarProdutosIniciais() {
@@ -693,23 +801,16 @@
     await Promise.all([carregarProdutos(), atualizarTabelaEstoque(), carregarHistorico()]);
   }
 
-  // Inicializar
-  verificarSessao();
-  if (document.getElementById('mainApp').style.display !== 'none') {
-    iniciar();
-  }
-  
   // Expor funções globalmente
   window.fazerLogin = fazerLogin;
   window.logout = logout;
   window.registrarEntrada = registrarEntrada;
   window.registrarSaida = registrarSaida;
   window.filtrarEstoque = filtrarEstoque;
-  
-  // Se já estiver logado, iniciar
-  if (currentUser) {
-    iniciar();
-  }
+  window.cadastrarNovoProduto = cadastrarNovoProduto;
+
+  // Verificar sessão ao carregar
+  verificarSessao();
 </script>
 </body>
 </html>
