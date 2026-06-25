@@ -146,6 +146,11 @@
       width: auto;
     }
 
+    .imprimir-btn {
+      background: linear-gradient(135deg, #2d3436, #1a5276);
+      width: auto;
+    }
+
     .tabela-container {
       width: 100%;
       overflow-x: auto;
@@ -348,9 +353,21 @@
       font-size: 14px;
     }
 
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .header-actions h2 {
+      margin: 0;
+      flex: 1;
+    }
+
     h2 {
       font-size: 1.2rem;
-      margin-bottom: 16px;
       color: #2c3e50;
       font-weight: 700;
     }
@@ -424,6 +441,60 @@
         width: 100%;
       }
     }
+
+    /* Estilos para impressão */
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+      
+      .card {
+        box-shadow: none !important;
+        border: 1px solid #ddd;
+        break-inside: avoid;
+      }
+      
+      body {
+        background: white;
+        padding: 20px;
+      }
+      
+      table {
+        font-size: 12px;
+      }
+      
+      th {
+        background: #1a5276 !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      
+      .baixo {
+        color: #e17055 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      
+      .header-actions h2 {
+        font-size: 18px;
+      }
+      
+      .print-header {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      
+      .print-header h1 {
+        font-size: 24px;
+        color: #1a5276;
+      }
+      
+      .print-header p {
+        color: #636e72;
+        font-size: 14px;
+      }
+    }
   </style>
 
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -446,7 +517,7 @@
 <!-- Main Application -->
 <div id="mainApp" style="display:none;">
   <div class="container">
-    <div class="user-bar">
+    <div class="user-bar no-print">
       <div class="user-info">
         <span>👋 Olá, <strong id="userNameDisplay"></strong></span>
         <span id="userRoleDisplay" class="user-role"></span>
@@ -454,9 +525,9 @@
       <button class="btn-logout" onclick="logout()">🚪 Sair</button>
     </div>
 
-    <h1>📦 Controle de Estoque - Produtos de Limpeza</h1>
+    <h1 class="no-print">📦 Controle de Estoque - Produtos de Limpeza</h1>
 
-    <div class="card">
+    <div class="card no-print">
       <h2>➕ Movimentação</h2>
 
       <!-- NOVO PRODUTO - Área para cadastrar novos produtos -->
@@ -518,17 +589,20 @@
     </div>
 
     <div class="card">
-      <h2>📊 Estoque Atual</h2>
-      <div class="filtro">
+      <div class="header-actions">
+        <h2>📊 Estoque Atual</h2>
+        <button class="imprimir-btn no-print" onclick="imprimirEstoque()">🖨️ Imprimir</button>
+      </div>
+      <div class="filtro no-print">
         <input type="text" id="filtroProduto" placeholder="🔍 Filtrar produto..." onkeyup="filtrarEstoque()">
       </div>
       <div class="tabela-container">
-        <table>
+        <table id="tabelaEstoque">
           <thead>
             <tr>
               <th>Produto</th>
               <th style="text-align:center;">Saldo</th>
-              <th>Última Atualização</th>
+              <th class="no-print">Última Atualização</th>
             </tr>
           </thead>
           <tbody id="estoqueTabela"></tbody>
@@ -536,7 +610,7 @@
       </div>
     </div>
 
-    <div class="card">
+    <div class="card no-print">
       <h2>📜 Histórico de Movimentações</h2>
       <div class="tabela-container">
         <table>
@@ -681,6 +755,141 @@
     setTimeout(() => toast.remove(), 3500);
   }
 
+  // IMPRIMIR ESTOQUE
+  window.imprimirEstoque = function() {
+    // Pegar todos os produtos do cache
+    const produtos = produtosCache.sort((a, b) => a.nome.localeCompare(b.nome));
+    
+    if (produtos.length === 0) {
+      mostrarToast('Nenhum produto para imprimir', 'error');
+      return;
+    }
+
+    // Criar conteúdo para impressão
+    const conteudoImpressao = `
+      <div class="print-header">
+        <h1>📦 Relatório de Estoque</h1>
+        <p>Produtos de Limpeza - ${new Date().toLocaleDateString('pt-BR')}</p>
+        <p style="font-size: 12px; color: #636e72;">Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
+        <hr style="margin: 15px 0;">
+      </div>
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th style="text-align: left; padding: 10px; background: #1a5276; color: white;">Produto</th>
+            <th style="text-align: center; padding: 10px; background: #1a5276; color: white;">Quantidade</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${produtos.map(p => `
+            <tr>
+              <td style="padding: 8px 10px; border-bottom: 1px solid #ddd;">${p.nome}</td>
+              <td style="padding: 8px 10px; text-align: center; border-bottom: 1px solid #ddd; font-weight: ${p.estoque === 0 ? 'bold' : 'normal'}; color: ${p.estoque === 0 ? '#e17055' : '#2d3436'};">
+                ${p.estoque || 0} ${p.estoque === 0 ? '⚠️' : ''}
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      <div style="margin-top: 20px; text-align: center; font-size: 11px; color: #b2bec3;">
+        Total de produtos: ${produtos.length}
+      </div>
+    `;
+
+    // Abrir janela de impressão
+    const janela = window.open('', '_blank', 'width=800,height=600');
+    if (!janela) {
+      mostrarToast('Permita pop-ups para imprimir', 'error');
+      return;
+    }
+
+    janela.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Relatório de Estoque</title>
+          <style>
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+              font-family: 'Segoe UI', Arial, sans-serif;
+            }
+            body {
+              padding: 40px;
+              background: white;
+            }
+            .print-header {
+              text-align: center;
+              margin-bottom: 30px;
+            }
+            .print-header h1 {
+              color: #1a5276;
+              font-size: 28px;
+              margin-bottom: 5px;
+            }
+            .print-header p {
+              color: #636e72;
+              font-size: 14px;
+              margin: 3px 0;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 10px 0;
+            }
+            th {
+              background: #1a5276;
+              color: white;
+              padding: 10px;
+              text-align: left;
+              font-weight: 600;
+            }
+            td {
+              padding: 8px 10px;
+              border-bottom: 1px solid #ecf0f1;
+            }
+            tr:hover {
+              background: #f8f9fa;
+            }
+            hr {
+              border: 0;
+              border-top: 2px solid #ecf0f1;
+              margin: 15px 0;
+            }
+            .total {
+              margin-top: 20px;
+              text-align: right;
+              font-weight: bold;
+              color: #1a5276;
+            }
+            @media print {
+              body { padding: 20px; }
+              th { background: #1a5276 !important; color: white !important; }
+              tr:hover { background: transparent; }
+            }
+          </style>
+        </head>
+        <body>
+          ${conteudoImpressao}
+          <script>
+            // Aguardar carregamento e imprimir automaticamente
+            window.onload = function() {
+              setTimeout(function() {
+                window.print();
+                // Fechar janela após impressão
+                window.onafterprint = function() {
+                  window.close();
+                };
+              }, 500);
+            };
+          <\/script>
+        </body>
+      </html>
+    `);
+    janela.document.close();
+  };
+
   // CADASTRAR NOVO PRODUTO
   window.cadastrarNovoProduto = async function() {
     if (currentUser?.role !== 'admin') {
@@ -695,7 +904,6 @@
       return;
     }
     
-    // Verificar se já existe
     try {
       const snapshot = await db.collection("produtos").get();
       let existe = false;
@@ -710,7 +918,6 @@
         return;
       }
       
-      // Criar ID único baseado no nome
       const id = nomeProduto.replace(/\s+/g, '_').toLowerCase() + '_' + Date.now();
       
       await db.collection("produtos").doc(id).set({
@@ -733,7 +940,6 @@
     }
   }
 
-  // CRIAR PRODUTOS INICIAIS
   async function criarProdutosIniciais() {
     try {
       const snapshot = await db.collection("produtos").get();
@@ -756,7 +962,6 @@
     }
   }
 
-  // CARREGAR PRODUTOS
   async function carregarProdutos() {
     try {
       const snapshot = await db.collection("produtos").get();
@@ -786,7 +991,6 @@
     }
   }
 
-  // ATUALIZAR TABELA ESTOQUE
   async function atualizarTabelaEstoque() {
     try {
       const snapshot = await db.collection("produtos").get();
@@ -818,7 +1022,7 @@
             ${estoqueValue}
             ${isEstoqueBaixo ? ' ⚠️' : ''}
           </td>
-          <td style="font-size:12px; color:#636e72;">${produto.ultimaAtualizacao || '-'}</td>
+          <td class="no-print" style="font-size:12px; color:#636e72;">${produto.ultimaAtualizacao || '-'}</td>
         `;
         tabela.appendChild(tr);
       });
@@ -829,7 +1033,6 @@
     }
   }
 
-  // FILTRAR ESTOQUE
   window.filtrarEstoque = function() {
     const filtro = document.getElementById('filtroProduto').value.toLowerCase();
     const filtrados = produtosCache.filter(p => p.nome.toLowerCase().includes(filtro));
@@ -852,13 +1055,12 @@
           ${estoqueValue}
           ${isEstoqueBaixo ? ' ⚠️' : ''}
         </td>
-        <td style="font-size:12px; color:#636e72;">${produto.ultimaAtualizacao || '-'}</td>
+        <td class="no-print" style="font-size:12px; color:#636e72;">${produto.ultimaAtualizacao || '-'}</td>
       `;
       tabela.appendChild(tr);
     });
   }
 
-  // CARREGAR HISTÓRICO
   async function carregarHistorico() {
     try {
       const snapshot = await db.collection("movimentacoes")
@@ -867,164 +1069,4 @@
         .get();
       
       const movimentacoes = [];
-      snapshot.forEach(doc => {
-        movimentacoes.push(doc.data());
-      });
-      
-      const tabela = document.getElementById('historicoTabela');
-      tabela.innerHTML = '';
-      
-      if (movimentacoes.length === 0) {
-        tabela.innerHTML = '<tr><td colspan="6" class="empty-state">Nenhuma movimentação registrada</td></tr>';
-        return;
-      }
-      
-      movimentacoes.forEach(mov => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><span class="badge ${mov.tipo === 'Entrada' ? 'entrada' : 'saida'}">${mov.tipo}</span></td>
-          <td><strong>${mov.produto || '-'}</strong></td>
-          <td style="text-align:center;">${mov.quantidade || '-'}</td>
-          <td>${mov.responsavel || '-'}</td>
-          <td style="font-size:12px;">${mov.data || '-'}</td>
-          <td style="font-size:12px; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-            ${mov.observacoes || '-'}
-          </td>
-        `;
-        tabela.appendChild(tr);
-      });
-    } catch (error) {
-      console.error('Erro ao carregar histórico:', error);
-    }
-  }
-
-  // REGISTRAR ENTRADA
-  window.registrarEntrada = async function() {
-    await movimentar('Entrada');
-  }
-
-  // REGISTRAR SAÍDA
-  window.registrarSaida = async function() {
-    await movimentar('Saída');
-  }
-
-  // MOVIMENTAR
-  async function movimentar(tipo) {
-    if (currentUser?.role !== 'admin') {
-      mostrarToast('Apenas administradores podem registrar movimentações!', 'error');
-      return;
-    }
-    
-    const produtoId = document.getElementById('produto').value;
-    const quantidade = Number(document.getElementById('quantidade').value);
-    const responsavel = document.getElementById('responsavel').value.trim();
-    const validade = document.getElementById('validade').value;
-    const recebimento = document.getElementById('recebimento').value;
-    const entrega = document.getElementById('entrega').value;
-    const assinatura = document.getElementById('assinatura').value.trim();
-    const observacoes = document.getElementById('observacoes').value.trim();
-
-    // Validações
-    if (!produtoId) { mostrarToast('Selecione um produto', 'error'); return; }
-    if (!quantidade || quantidade <= 0) { mostrarToast('Quantidade inválida', 'error'); return; }
-    if (!responsavel) { mostrarToast('Preencha o responsável', 'error'); return; }
-
-    try {
-      const produtoRef = db.collection("produtos").doc(produtoId);
-      const doc = await produtoRef.get();
-      
-      if (!doc.exists) {
-        throw new Error('Produto não encontrado');
-      }
-      
-      const produto = doc.data();
-      let novoSaldo = produto.estoque || 0;
-      
-      if (tipo === 'Entrada') {
-        novoSaldo += quantidade;
-      } else {
-        if (quantidade > novoSaldo) {
-          throw new Error(`Estoque insuficiente. Disponível: ${novoSaldo}`);
-        }
-        novoSaldo -= quantidade;
-      }
-      
-      // Atualizar estoque
-      await produtoRef.update({
-        estoque: novoSaldo,
-        ultimaAtualizacao: new Date().toLocaleString('pt-BR')
-      });
-      
-      // Registrar movimentação
-      await db.collection("movimentacoes").add({
-        tipo,
-        produto: produto.nome,
-        quantidade,
-        responsavel,
-        validade: validade || null,
-        recebimento: recebimento || null,
-        entrega: entrega || null,
-        assinatura: assinatura || null,
-        observacoes: observacoes || null,
-        data: new Date().toLocaleString('pt-BR'),
-        dataCriacao: new Date().toISOString(),
-        usuario: currentUser.name
-      });
-      
-      mostrarToast(`✅ ${tipo} registrada! Novo saldo: ${novoSaldo}`, 'success');
-      
-      // Limpar campos
-      document.getElementById('quantidade').value = '';
-      document.getElementById('responsavel').value = '';
-      document.getElementById('validade').value = '';
-      document.getElementById('recebimento').value = '';
-      document.getElementById('entrega').value = '';
-      document.getElementById('assinatura').value = '';
-      document.getElementById('observacoes').value = '';
-      
-      // Recarregar tudo
-      await Promise.all([
-        atualizarTabelaEstoque(),
-        carregarHistorico(),
-        carregarProdutos()
-      ]);
-      
-    } catch (error) {
-      mostrarToast(error.message || 'Erro ao registrar movimentação', 'error');
-      console.error(error);
-    }
-  }
-
-  // INICIAR
-  async function iniciar() {
-    try {
-      await criarProdutosIniciais();
-      await Promise.all([
-        carregarProdutos(),
-        atualizarTabelaEstoque(),
-        carregarHistorico()
-      ]);
-      console.log('✅ Sistema iniciado com sucesso');
-    } catch (error) {
-      console.error('Erro ao iniciar:', error);
-      mostrarToast('Erro ao carregar dados', 'error');
-    }
-  }
-
-  // =========================================
-  // EXPOR FUNÇÕES GLOBALMENTE
-  // =========================================
-  window.fazerLogin = fazerLogin;
-  window.logout = logout;
-  window.registrarEntrada = registrarEntrada;
-  window.registrarSaida = registrarSaida;
-  window.filtrarEstoque = filtrarEstoque;
-  window.cadastrarNovoProduto = cadastrarNovoProduto;
-
-  // =========================================
-  // VERIFICAR SESSÃO AO CARREGAR
-  // =========================================
-  document.addEventListener('DOMContentLoaded', verificarSessao);
-</script>
-</body>
-</html>
+      snapshot.forEach(d
