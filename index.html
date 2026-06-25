@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>Controle de Estoque</title>
+  <title>Controle de Estoque - Limpeza</title>
 
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Arial, sans-serif;
     }
 
     body {
-      background: #f4f6f9;
+      background: #f0f2f5;
       padding: 16px;
-      color: #333;
+      color: #2d3436;
     }
 
     .container {
@@ -26,18 +26,24 @@
     }
 
     h1 {
-      color: #1f4e78;
+      color: #1a5276;
       margin-bottom: 20px;
-      font-size: 1.5rem;
+      font-size: 1.6rem;
+      font-weight: 700;
     }
 
     .card {
       background: white;
-      padding: 16px;
-      border-radius: 14px;
+      padding: 20px;
+      border-radius: 16px;
       margin-bottom: 20px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
       width: 100%;
+      transition: box-shadow 0.3s;
+    }
+
+    .card:hover {
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
     }
 
     .grid {
@@ -49,26 +55,38 @@
     @media (min-width: 768px) {
       .grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 15px;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 16px;
       }
     }
 
     label {
       display: block;
-      margin-bottom: 6px;
-      font-weight: bold;
-      font-size: 14px;
+      margin-bottom: 5px;
+      font-weight: 600;
+      font-size: 13px;
+      color: #2c3e50;
     }
 
     input,
     select,
     textarea {
       width: 100%;
-      padding: 10px;
+      padding: 10px 12px;
       border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 16px;
+      border: 1.5px solid #dfe6e9;
+      font-size: 14px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      background: #fafafa;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: #1a5276;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(26, 82, 118, 0.1);
+      background: white;
     }
 
     textarea {
@@ -78,53 +96,61 @@
 
     .buttons {
       display: flex;
-      gap: 10px;
+      gap: 12px;
       margin-top: 20px;
       flex-wrap: wrap;
     }
 
     button {
       border: none;
-      padding: 12px 18px;
+      padding: 12px 24px;
       border-radius: 8px;
       cursor: pointer;
-      font-weight: bold;
+      font-weight: 600;
       color: white;
-      transition: opacity 0.3s;
+      transition: all 0.3s;
       font-size: 14px;
+      letter-spacing: 0.3px;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
 
     button:disabled {
       opacity: 0.5;
       cursor: not-allowed;
+      transform: none !important;
     }
 
     .entrada-btn {
-      background: #198754;
+      background: linear-gradient(135deg, #00b894, #00a884);
     }
 
     .saida-btn {
-      background: #dc3545;
+      background: linear-gradient(135deg, #e17055, #d63031);
     }
 
     .logout-btn {
-      background: #6c757d;
+      background: #636e72;
     }
 
     .admin-btn {
-      background: #fd7e14;
+      background: linear-gradient(135deg, #fdcb6e, #f39c12);
+      color: #2d3436;
     }
 
     .novo-produto-btn {
-      background: #17a2b8;
+      background: linear-gradient(135deg, #0984e3, #6c5ce7);
       width: auto;
-      margin-top: 8px;
     }
 
     .tabela-container {
       width: 100%;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
+      border-radius: 8px;
     }
 
     table {
@@ -132,65 +158,75 @@
       min-width: 500px;
       border-collapse: collapse;
       background: white;
+      font-size: 13px;
     }
 
     th, td {
-      padding: 12px 8px;
+      padding: 12px 10px;
       text-align: left;
-      font-size: 13px;
-      border-bottom: 1px solid #ddd;
+      border-bottom: 1px solid #ecf0f1;
     }
 
     th {
-      background: #1f4e78;
+      background: #1a5276;
       color: white;
-      font-weight: bold;
+      font-weight: 600;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    tr:hover {
+      background: #f8f9fa;
     }
 
     @media (max-width: 768px) {
       th, td {
-        padding: 8px 4px;
+        padding: 8px 6px;
         font-size: 11px;
       }
     }
 
     .baixo {
-      color: red;
-      font-weight: bold;
+      color: #e17055;
+      font-weight: 700;
     }
 
     .badge {
-      padding: 4px 8px;
+      padding: 4px 12px;
       border-radius: 20px;
       color: white;
       font-size: 11px;
-      font-weight: bold;
+      font-weight: 700;
       display: inline-block;
+      letter-spacing: 0.3px;
     }
 
-    .entrada { background: #198754; }
-    .saida { background: #dc3545; }
+    .entrada { background: #00b894; }
+    .saida { background: #e17055; }
 
     .toast {
       position: fixed;
-      bottom: 20px;
+      bottom: 30px;
       left: 50%;
       transform: translateX(-50%);
-      background: #333;
       color: white;
-      padding: 12px 20px;
-      border-radius: 8px;
+      padding: 14px 28px;
+      border-radius: 12px;
       z-index: 1000;
-      animation: fadeIn 0.3s ease;
+      animation: slideUp 0.4s ease;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      font-weight: 500;
+      max-width: 90%;
     }
 
-    .toast.success { background: #198754; }
-    .toast.error { background: #dc3545; }
-    .toast.info { background: #17a2b8; }
+    .toast.success { background: #00b894; }
+    .toast.error { background: #e17055; }
+    .toast.info { background: #0984e3; }
 
-    @keyframes fadeIn {
-      from { opacity: 0; bottom: 0; }
-      to { opacity: 1; bottom: 20px; }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
     }
 
     /* Login Screen */
@@ -200,7 +236,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: linear-gradient(135deg, #1f4e78 0%, #2c3e50 100%);
+      background: linear-gradient(135deg, #1a5276 0%, #2c3e50 100%);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -210,111 +246,139 @@
 
     .login-box {
       background: white;
-      padding: 32px 24px;
-      border-radius: 20px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      padding: 40px 32px;
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
       width: 100%;
-      max-width: 320px;
+      max-width: 360px;
     }
 
     .login-box h2 {
       text-align: center;
+      margin-bottom: 28px;
+      font-size: 26px;
+      color: #1a5276;
+    }
+
+    .login-box .subtitle {
+      text-align: center;
+      color: #636e72;
       margin-bottom: 24px;
-      font-size: 24px;
-      color: #1f4e78;
+      font-size: 14px;
     }
 
     .login-box input {
-      margin: 8px 0;
+      margin: 8px 0 16px 0;
     }
 
     .login-box button {
-      margin-top: 16px;
-      background: #1f4e78;
+      margin-top: 8px;
+      background: linear-gradient(135deg, #1a5276, #2c3e50);
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+    }
+
+    .login-box button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(26, 82, 118, 0.3);
     }
 
     /* User Bar */
     .user-bar {
-      background: #2c3e50;
+      background: linear-gradient(135deg, #1a5276, #2c3e50);
       color: white;
-      padding: 12px 16px;
-      border-radius: 12px;
-      margin-bottom: 16px;
+      padding: 14px 20px;
+      border-radius: 14px;
+      margin-bottom: 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 12px;
     }
 
     .user-info {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
       flex-wrap: wrap;
     }
 
     .user-role {
-      background: #e74c3c;
-      padding: 4px 12px;
+      background: #e17055;
+      padding: 4px 14px;
       border-radius: 20px;
       font-size: 11px;
-      font-weight: bold;
+      font-weight: 700;
+      letter-spacing: 0.5px;
     }
 
     .user-role.admin {
-      background: #27ae60;
+      background: #00b894;
     }
 
     .btn-logout {
-      background: #e74c3c;
-      padding: 6px 16px;
-      border: none;
+      background: rgba(255,255,255,0.15);
+      padding: 8px 20px;
+      border: 2px solid rgba(255,255,255,0.2);
       border-radius: 8px;
       color: white;
       cursor: pointer;
       font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s;
       width: auto;
     }
 
+    .btn-logout:hover {
+      background: rgba(255,255,255,0.25);
+      border-color: rgba(255,255,255,0.4);
+    }
+
     .filtro {
-      margin-bottom: 15px;
+      margin-bottom: 16px;
     }
 
     .filtro input {
       width: 100%;
-      padding: 10px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: 2px solid #dfe6e9;
+      font-size: 14px;
     }
 
     h2 {
-      font-size: 1.3rem;
-      margin-bottom: 15px;
+      font-size: 1.2rem;
+      margin-bottom: 16px;
+      color: #2c3e50;
+      font-weight: 700;
     }
 
-    /* Grupo de novo produto */
+    /* Novo produto group */
     .novo-produto-group {
-      background: #e8f4f8;
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 15px;
-      border-left: 4px solid #17a2b8;
+      background: linear-gradient(135deg, #f0f8ff, #e8f4f8);
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 18px;
+      border-left: 4px solid #0984e3;
     }
 
     .novo-produto-group label {
-      margin-bottom: 4px;
-      color: #0c5460;
+      font-weight: 600;
+      color: #1a5276;
     }
 
     .input-group {
       display: flex;
-      gap: 8px;
+      gap: 10px;
       align-items: center;
       flex-wrap: wrap;
     }
 
     .input-group input {
       flex: 1;
-      min-width: 150px;
+      min-width: 180px;
     }
 
     .input-group button {
@@ -322,31 +386,60 @@
       margin-top: 0;
     }
 
-    /* Debug - mostrar dados carregados */
     .debug-info {
       font-size: 10px;
-      color: #666;
+      color: #b2bec3;
       margin-top: 5px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 30px 20px;
+      color: #b2bec3;
+      font-size: 14px;
+    }
+
+    .empty-state i {
+      font-size: 40px;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 480px) {
+      .login-box {
+        padding: 28px 20px;
+      }
+      
+      .user-bar {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+      }
+      
+      .user-info {
+        justify-content: center;
+      }
+      
+      .btn-logout {
+        width: 100%;
+      }
     }
   </style>
 
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
 <!-- Login Screen -->
 <div id="loginContainer" class="login-container">
   <div class="login-box">
-    <h2>📦 Controle de Estoque</h2>
+    <h2>📦 Estoque</h2>
+    <div class="subtitle">Sistema de Controle de Produtos de Limpeza</div>
     <input type="text" id="loginUser" placeholder="Usuário" autocomplete="off">
     <input type="password" id="loginPassword" placeholder="Senha">
     <button onclick="fazerLogin()">Entrar</button>
-    <div style="text-align:center; margin-top:16px; font-size:12px; color:#666;">
-      👑 Admin: admin / admin123<br>
-      👤 Usuário: user / user123
-    </div>
-    <div id="loginError" style="color:#e74c3c; text-align:center; margin-top:12px; font-size:13px;"></div>
+    <div id="loginError" style="color:#e17055; text-align:center; margin-top:14px; font-size:13px;"></div>
   </div>
 </div>
 
@@ -371,25 +464,25 @@
         <label>🆕 Cadastrar Novo Produto</label>
         <div class="input-group">
           <input type="text" id="novoProdutoNome" placeholder="Nome do novo produto" maxlength="50">
-          <button class="novo-produto-btn" onclick="cadastrarNovoProduto()">➕ Adicionar Produto</button>
+          <button class="novo-produto-btn" onclick="cadastrarNovoProduto()">➕ Adicionar</button>
         </div>
-        <small style="color: #666; font-size: 11px;">Digite o nome do produto e clique em adicionar. Ele aparecerá na lista abaixo.</small>
+        <small style="color: #636e72; font-size: 11px;">Digite o nome e clique em adicionar. O produto aparecerá na lista.</small>
       </div>
 
       <div class="grid">
         <div>
-          <label>Produto</label>
+          <label>Produto *</label>
           <select id="produto"></select>
         </div>
 
         <div>
-          <label>Quantidade</label>
+          <label>Quantidade *</label>
           <input type="number" id="quantidade" min="1">
         </div>
 
         <div>
-          <label>Responsável</label>
-          <input type="text" id="responsavel">
+          <label>Responsável *</label>
+          <input type="text" id="responsavel" placeholder="Nome do responsável">
         </div>
 
         <div>
@@ -415,12 +508,12 @@
 
       <div style="margin-top: 15px;">
         <label>Observações</label>
-        <textarea id="observacoes"></textarea>
+        <textarea id="observacoes" placeholder="Observações adicionais..."></textarea>
       </div>
 
       <div class="buttons">
-        <button class="entrada-btn" id="btnEntrada" onclick="registrarEntrada()">Registrar Entrada</button>
-        <button class="saida-btn" id="btnSaida" onclick="registrarSaida()">Registrar Saída</button>
+        <button class="entrada-btn" id="btnEntrada" onclick="registrarEntrada()">📥 Registrar Entrada</button>
+        <button class="saida-btn" id="btnSaida" onclick="registrarSaida()">📤 Registrar Saída</button>
       </div>
     </div>
 
@@ -430,12 +523,12 @@
         <input type="text" id="filtroProduto" placeholder="🔍 Filtrar produto..." onkeyup="filtrarEstoque()">
       </div>
       <div class="tabela-container">
-        <table id="tabelaEstoque">
+        <table>
           <thead>
             <tr>
-              <th width="50%">Produto</th>
-              <th width="20%">Saldo</th>
-              <th width="30%">Atualização</th>
+              <th>Produto</th>
+              <th style="text-align:center;">Saldo</th>
+              <th>Última Atualização</th>
             </tr>
           </thead>
           <tbody id="estoqueTabela"></tbody>
@@ -444,14 +537,14 @@
     </div>
 
     <div class="card">
-      <h2>📜 Histórico</h2>
+      <h2>📜 Histórico de Movimentações</h2>
       <div class="tabela-container">
-        <table id="tabelaHistorico">
+        <table>
           <thead>
             <tr>
               <th>Tipo</th>
               <th>Produto</th>
-              <th>Qtd</th>
+              <th style="text-align:center;">Qtd</th>
               <th>Responsável</th>
               <th>Data</th>
               <th>Obs</th>
@@ -465,7 +558,9 @@
 </div>
 
 <script>
-  // Configuração do Firebase
+  // =========================================
+  // CONFIGURAÇÃO DO FIREBASE
+  // =========================================
   const firebaseConfig = {
     apiKey: "AIzaSyDyQmPBYiwC_MqlQWyGnU95Ld8Y-kgd8GA",
     authDomain: "estoquelimpeza-d22f2.firebaseapp.com",
@@ -477,7 +572,7 @@
   };
 
   firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+  const db = firebase.firestore();
 
   // =========================================
   // AUTENTICAÇÃO
@@ -508,10 +603,9 @@
       aplicarRestricoes();
       document.getElementById('loginError').textContent = '';
       
-      // Iniciar o sistema após login
       iniciar();
     } else {
-      document.getElementById('loginError').textContent = 'Usuário ou senha inválidos!';
+      document.getElementById('loginError').textContent = '❌ Usuário ou senha inválidos!';
     }
   }
 
@@ -584,7 +678,7 @@
     toast.className = `toast ${tipo}`;
     toast.textContent = mensagem;
     document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
+    setTimeout(() => toast.remove(), 3500);
   }
 
   // CADASTRAR NOVO PRODUTO
@@ -602,35 +696,34 @@
     }
     
     // Verificar se já existe
-    const snapshot = await db.ref("produtos").once("value");
-    let existe = false;
-    snapshot.forEach(child => {
-      if (child.val().nome.toLowerCase() === nomeProduto.toLowerCase()) {
-        existe = true;
-      }
-    });
-    
-    if (existe) {
-      mostrarToast('Este produto já existe!', 'error');
-      return;
-    }
-    
-    // Criar ID único baseado no nome
-    const id = nomeProduto.replace(/\s+/g, '_').toLowerCase();
-    
     try {
-      await db.ref(`produtos/${id}`).set({
+      const snapshot = await db.collection("produtos").get();
+      let existe = false;
+      snapshot.forEach(doc => {
+        if (doc.data().nome.toLowerCase() === nomeProduto.toLowerCase()) {
+          existe = true;
+        }
+      });
+      
+      if (existe) {
+        mostrarToast('Este produto já existe!', 'error');
+        return;
+      }
+      
+      // Criar ID único baseado no nome
+      const id = nomeProduto.replace(/\s+/g, '_').toLowerCase() + '_' + Date.now();
+      
+      await db.collection("produtos").doc(id).set({
         id: id,
         nome: nomeProduto,
         estoque: 0,
         ultimaAtualizacao: new Date().toLocaleString('pt-BR'),
-        dataCadastro: Date.now()
+        dataCadastro: new Date().toISOString()
       });
       
-      mostrarToast(`Produto "${nomeProduto}" cadastrado com sucesso!`, 'success');
+      mostrarToast(`✅ Produto "${nomeProduto}" cadastrado com sucesso!`, 'success');
       document.getElementById('novoProdutoNome').value = '';
       
-      // Recarregar a lista de produtos
       await carregarProdutos();
       await atualizarTabelaEstoque();
       
@@ -640,181 +733,233 @@
     }
   }
 
+  // CRIAR PRODUTOS INICIAIS
   async function criarProdutosIniciais() {
-    const snapshot = await db.ref("produtos").once("value");
-    if (!snapshot.exists()) {
-      for (const produto of produtosIniciais) {
-        const id = produto.nome.replace(/\s+/g, '_').toLowerCase();
-        await db.ref(`produtos/${id}`).set({
-          id: id,
-          nome: produto.nome,
-          estoque: produto.estoque,
-          ultimaAtualizacao: new Date().toLocaleString('pt-BR')
-        });
-      }
-      console.log('Produtos iniciais criados');
-    }
-  }
-
-  async function carregarProdutos() {
-    const select = document.getElementById('produto');
-    const snapshot = await db.ref("produtos").once("value");
-    const produtos = [];
-    snapshot.forEach(child => {
-      produtos.push(child.val());
-    });
-    produtosCache = produtos;
-    produtos.sort((a, b) => a.nome.localeCompare(b.nome));
-    
-    select.innerHTML = '';
-    produtos.forEach(produto => {
-      const option = document.createElement('option');
-      option.value = produto.id;
-      const estoqueAtual = produto.estoque !== undefined ? produto.estoque : 0;
-      option.textContent = `${produto.nome} (${estoqueAtual})`;
-      select.appendChild(option);
-    });
-  }
-
-  async function atualizarTabelaEstoque() {
-    const snapshot = await db.ref("produtos").once("value");
-    const produtos = [];
-    snapshot.forEach(child => {
-      const val = child.val();
-      produtos.push({
-        id: val.id,
-        nome: val.nome,
-        estoque: val.estoque !== undefined ? val.estoque : 0,
-        ultimaAtualizacao: val.ultimaAtualizacao || '-'
-      });
-    });
-    produtosCache = produtos;
-    produtos.sort((a, b) => a.nome.localeCompare(b.nome));
-    
-    const tabela = document.getElementById('estoqueTabela');
-    tabela.innerHTML = '';
-    
-    if (produtos.length === 0) {
-      tabela.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nenhum produto cadastrado</td></tr>';
-      return;
-    }
-    
-    produtos.forEach(produto => {
-      const tr = document.createElement('tr');
-      const estoqueValue = produto.estoque;
-      const isEstoqueBaixo = estoqueValue === 0;
+    try {
+      const snapshot = await db.collection("produtos").get();
       
-      tr.innerHTML = `
-        <td style="font-weight:500;">${produto.nome}</td>
-        <td class="${isEstoqueBaixo ? 'baixo' : ''}" style="text-align:center; font-weight:bold;">${estoqueValue}</td>
-        <td style="font-size:11px; color:#666;">${produto.ultimaAtualizacao}</td>
-      `;
-      tabela.appendChild(tr);
-    });
-    
-    console.log('Tabela atualizada com', produtos.length, 'produtos');
+      if (snapshot.empty) {
+        for (const produto of produtosIniciais) {
+          const id = produto.nome.replace(/\s+/g, '_').toLowerCase();
+          
+          await db.collection("produtos").doc(id).set({
+            id: id,
+            nome: produto.nome,
+            estoque: produto.estoque,
+            ultimaAtualizacao: new Date().toLocaleString('pt-BR')
+          });
+        }
+        console.log('✅ Produtos iniciais criados');
+      }
+    } catch (error) {
+      console.error('Erro ao criar produtos iniciais:', error);
+    }
   }
 
+  // CARREGAR PRODUTOS
+  async function carregarProdutos() {
+    try {
+      const snapshot = await db.collection("produtos").get();
+      
+      const produtos = [];
+      snapshot.forEach(doc => {
+        produtos.push(doc.data());
+      });
+      
+      produtosCache = produtos;
+      produtos.sort((a, b) => a.nome.localeCompare(b.nome));
+      
+      const select = document.getElementById('produto');
+      select.innerHTML = '';
+      
+      produtos.forEach(produto => {
+        const option = document.createElement('option');
+        option.value = produto.id;
+        option.textContent = `${produto.nome} (${produto.estoque || 0})`;
+        select.appendChild(option);
+      });
+      
+      return produtos;
+    } catch (error) {
+      console.error('Erro ao carregar produtos:', error);
+      return [];
+    }
+  }
+
+  // ATUALIZAR TABELA ESTOQUE
+  async function atualizarTabelaEstoque() {
+    try {
+      const snapshot = await db.collection("produtos").get();
+      
+      const produtos = [];
+      snapshot.forEach(doc => {
+        produtos.push(doc.data());
+      });
+      
+      produtosCache = produtos;
+      produtos.sort((a, b) => a.nome.localeCompare(b.nome));
+      
+      const tabela = document.getElementById('estoqueTabela');
+      tabela.innerHTML = '';
+      
+      if (produtos.length === 0) {
+        tabela.innerHTML = '<tr><td colspan="3" class="empty-state">Nenhum produto cadastrado</td></tr>';
+        return;
+      }
+      
+      produtos.forEach(produto => {
+        const tr = document.createElement('tr');
+        const estoqueValue = produto.estoque || 0;
+        const isEstoqueBaixo = estoqueValue === 0;
+        
+        tr.innerHTML = `
+          <td><strong>${produto.nome}</strong></td>
+          <td class="${isEstoqueBaixo ? 'baixo' : ''}" style="text-align:center; font-weight:bold; font-size:16px;">
+            ${estoqueValue}
+            ${isEstoqueBaixo ? ' ⚠️' : ''}
+          </td>
+          <td style="font-size:12px; color:#636e72;">${produto.ultimaAtualizacao || '-'}</td>
+        `;
+        tabela.appendChild(tr);
+      });
+      
+      console.log('📊 Tabela atualizada com', produtos.length, 'produtos');
+    } catch (error) {
+      console.error('Erro ao atualizar tabela:', error);
+    }
+  }
+
+  // FILTRAR ESTOQUE
   window.filtrarEstoque = function() {
     const filtro = document.getElementById('filtroProduto').value.toLowerCase();
     const filtrados = produtosCache.filter(p => p.nome.toLowerCase().includes(filtro));
     const tabela = document.getElementById('estoqueTabela');
     tabela.innerHTML = '';
     
-    filtrados.forEach(produto => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${produto.nome}</td>
-        <td class="${produto.estoque === 0 ? 'baixo' : ''}" style="text-align:center; font-weight:bold;">${produto.estoque}</td>
-        <td>${produto.ultimaAtualizacao || '-'}</td>
-      `;
-      tabela.appendChild(tr);
-    });
-  }
-
-  async function carregarHistorico() {
-    const snapshot = await db.ref("movimentacoes").orderByChild("dataCriacao").once("value");
-    const movimentacoes = [];
-    snapshot.forEach(child => {
-      movimentacoes.unshift(child.val());
-    });
-    
-    const tabela = document.getElementById('historicoTabela');
-    tabela.innerHTML = '';
-    
-    if (movimentacoes.length === 0) {
-      tabela.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nenhuma movimentação registrada</td></tr>';
+    if (filtrados.length === 0) {
+      tabela.innerHTML = '<tr><td colspan="3" class="empty-state">Nenhum produto encontrado</td></tr>';
       return;
     }
     
-    movimentacoes.forEach(mov => {
+    filtrados.forEach(produto => {
       const tr = document.createElement('tr');
+      const estoqueValue = produto.estoque || 0;
+      const isEstoqueBaixo = estoqueValue === 0;
+      
       tr.innerHTML = `
-        <td style="text-align:center;"><span class="badge ${mov.tipo === 'Entrada' ? 'entrada' : 'saida'}">${mov.tipo}</span></td>
-        <td>${mov.produto || '-'}</td>
-        <td style="text-align:center;">${mov.quantidade || '-'}</td>
-        <td>${mov.responsavel || '-'}</td>
-        <td style="font-size:11px;">${mov.data || '-'}</td>
-        <td style="font-size:11px;">${mov.observacoes || '-'}</td>
+        <td><strong>${produto.nome}</strong></td>
+        <td class="${isEstoqueBaixo ? 'baixo' : ''}" style="text-align:center; font-weight:bold; font-size:16px;">
+          ${estoqueValue}
+          ${isEstoqueBaixo ? ' ⚠️' : ''}
+        </td>
+        <td style="font-size:12px; color:#636e72;">${produto.ultimaAtualizacao || '-'}</td>
       `;
       tabela.appendChild(tr);
     });
   }
 
+  // CARREGAR HISTÓRICO
+  async function carregarHistorico() {
+    try {
+      const snapshot = await db.collection("movimentacoes")
+        .orderBy("dataCriacao", "desc")
+        .limit(100)
+        .get();
+      
+      const movimentacoes = [];
+      snapshot.forEach(doc => {
+        movimentacoes.push(doc.data());
+      });
+      
+      const tabela = document.getElementById('historicoTabela');
+      tabela.innerHTML = '';
+      
+      if (movimentacoes.length === 0) {
+        tabela.innerHTML = '<tr><td colspan="6" class="empty-state">Nenhuma movimentação registrada</td></tr>';
+        return;
+      }
+      
+      movimentacoes.forEach(mov => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><span class="badge ${mov.tipo === 'Entrada' ? 'entrada' : 'saida'}">${mov.tipo}</span></td>
+          <td><strong>${mov.produto || '-'}</strong></td>
+          <td style="text-align:center;">${mov.quantidade || '-'}</td>
+          <td>${mov.responsavel || '-'}</td>
+          <td style="font-size:12px;">${mov.data || '-'}</td>
+          <td style="font-size:12px; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+            ${mov.observacoes || '-'}
+          </td>
+        `;
+        tabela.appendChild(tr);
+      });
+    } catch (error) {
+      console.error('Erro ao carregar histórico:', error);
+    }
+  }
+
+  // REGISTRAR ENTRADA
   window.registrarEntrada = async function() {
     await movimentar('Entrada');
   }
 
+  // REGISTRAR SAÍDA
   window.registrarSaida = async function() {
     await movimentar('Saída');
   }
 
+  // MOVIMENTAR
   async function movimentar(tipo) {
+    if (currentUser?.role !== 'admin') {
+      mostrarToast('Apenas administradores podem registrar movimentações!', 'error');
+      return;
+    }
+    
     const produtoId = document.getElementById('produto').value;
     const quantidade = Number(document.getElementById('quantidade').value);
-    const responsavel = document.getElementById('responsavel').value;
+    const responsavel = document.getElementById('responsavel').value.trim();
     const validade = document.getElementById('validade').value;
     const recebimento = document.getElementById('recebimento').value;
     const entrega = document.getElementById('entrega').value;
-    const assinatura = document.getElementById('assinatura').value;
-    const observacoes = document.getElementById('observacoes').value;
+    const assinatura = document.getElementById('assinatura').value.trim();
+    const observacoes = document.getElementById('observacoes').value.trim();
 
+    // Validações
     if (!produtoId) { mostrarToast('Selecione um produto', 'error'); return; }
     if (!quantidade || quantidade <= 0) { mostrarToast('Quantidade inválida', 'error'); return; }
     if (!responsavel) { mostrarToast('Preencha o responsável', 'error'); return; }
 
-    const btn = event.target;
-    const originalText = btn.innerText;
-    btn.disabled = true;
-    btn.innerText = '...';
-
     try {
-      const produtoRef = db.ref(`produtos/${produtoId}`);
-      const snapshot = await produtoRef.once("value");
-      const produto = snapshot.val();
+      const produtoRef = db.collection("produtos").doc(produtoId);
+      const doc = await produtoRef.get();
       
-      if (!produto) {
+      if (!doc.exists) {
         throw new Error('Produto não encontrado');
       }
       
+      const produto = doc.data();
       let novoSaldo = produto.estoque || 0;
       
       if (tipo === 'Entrada') {
         novoSaldo += quantidade;
       } else {
-        if (quantidade > novoSaldo) throw new Error(`Estoque insuficiente. Disponível: ${novoSaldo}`);
+        if (quantidade > novoSaldo) {
+          throw new Error(`Estoque insuficiente. Disponível: ${novoSaldo}`);
+        }
         novoSaldo -= quantidade;
       }
       
-      await produtoRef.update({ 
-        estoque: novoSaldo, 
-        ultimaAtualizacao: new Date().toLocaleString('pt-BR') 
+      // Atualizar estoque
+      await produtoRef.update({
+        estoque: novoSaldo,
+        ultimaAtualizacao: new Date().toLocaleString('pt-BR')
       });
       
-      await db.ref("movimentacoes").push({
-        tipo, 
-        produto: produto.nome, 
-        quantidade, 
+      // Registrar movimentação
+      await db.collection("movimentacoes").add({
+        tipo,
+        produto: produto.nome,
+        quantidade,
         responsavel,
         validade: validade || null,
         recebimento: recebimento || null,
@@ -822,11 +967,11 @@
         assinatura: assinatura || null,
         observacoes: observacoes || null,
         data: new Date().toLocaleString('pt-BR'),
-        dataCriacao: Date.now(),
+        dataCriacao: new Date().toISOString(),
         usuario: currentUser.name
       });
       
-      mostrarToast(`${tipo} registrada! Novo saldo: ${novoSaldo}`, 'success');
+      mostrarToast(`✅ ${tipo} registrada! Novo saldo: ${novoSaldo}`, 'success');
       
       // Limpar campos
       document.getElementById('quantidade').value = '';
@@ -838,29 +983,37 @@
       document.getElementById('observacoes').value = '';
       
       // Recarregar tudo
-      await Promise.all([atualizarTabelaEstoque(), carregarHistorico(), carregarProdutos()]);
+      await Promise.all([
+        atualizarTabelaEstoque(),
+        carregarHistorico(),
+        carregarProdutos()
+      ]);
       
     } catch (error) {
-      mostrarToast(error.message, 'error');
+      mostrarToast(error.message || 'Erro ao registrar movimentação', 'error');
       console.error(error);
-    } finally {
-      btn.disabled = false;
-      btn.innerText = originalText;
     }
   }
 
+  // INICIAR
   async function iniciar() {
     try {
       await criarProdutosIniciais();
-      await Promise.all([carregarProdutos(), atualizarTabelaEstoque(), carregarHistorico()]);
-      console.log('Sistema iniciado com sucesso');
+      await Promise.all([
+        carregarProdutos(),
+        atualizarTabelaEstoque(),
+        carregarHistorico()
+      ]);
+      console.log('✅ Sistema iniciado com sucesso');
     } catch (error) {
       console.error('Erro ao iniciar:', error);
       mostrarToast('Erro ao carregar dados', 'error');
     }
   }
 
-  // Expor funções globalmente
+  // =========================================
+  // EXPOR FUNÇÕES GLOBALMENTE
+  // =========================================
   window.fazerLogin = fazerLogin;
   window.logout = logout;
   window.registrarEntrada = registrarEntrada;
@@ -868,8 +1021,10 @@
   window.filtrarEstoque = filtrarEstoque;
   window.cadastrarNovoProduto = cadastrarNovoProduto;
 
-  // Verificar sessão ao carregar
-  verificarSessao();
+  // =========================================
+  // VERIFICAR SESSÃO AO CARREGAR
+  // =========================================
+  document.addEventListener('DOMContentLoaded', verificarSessao);
 </script>
 </body>
 </html>
