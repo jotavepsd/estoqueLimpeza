@@ -48,26 +48,40 @@ async function criarProdutosIniciais() {
 async function carregarProdutos() {
   try {
     const snapshot = await db.collection("produtos").get();
-    
+
     const produtos = [];
+
     snapshot.forEach(doc => {
-      produtos.push(doc.data());
+      const produto = doc.data();
+
+      produtos.push({
+        ...produto,
+        id: doc.id
+      });
     });
-    
+
     produtosCache = produtos;
+
     produtos.sort((a, b) => a.nome.localeCompare(b.nome));
-    
+
     const select = document.getElementById('produto');
-    select.innerHTML = '';
-    
+
+    select.innerHTML = '<option value="">Selecione um produto</option>';
+
     produtos.forEach(produto => {
       const option = document.createElement('option');
+
+      // IMPORTANTE:
+      // usar o ID REAL do documento Firestore
       option.value = produto.id;
+
       option.textContent = `${produto.nome} (${produto.estoque || 0})`;
+
       select.appendChild(option);
     });
-    
+
     return produtos;
+
   } catch (error) {
     console.error('Erro ao carregar produtos:', error);
     return [];
