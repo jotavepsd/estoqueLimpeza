@@ -33,11 +33,33 @@ async function movimentar(tipo) {
   if (!responsavel) { mostrarToast('Preencha o responsável', 'error'); return; }
 
   try {
-    const produtoRef = db.collection("produtos").doc(produtoId);
-    const doc = await produtoRef.get();
-    
-    if (!doc.exists) {
-      throw new Error('Produto não encontrado');
+    let produtoRef = db.collection("produtos").doc(produtoId);
+let doc = await produtoRef.get();
+
+if (!doc.exists) {
+  console.log('Produto não encontrado pelo doc.id. Procurando pelo campo id...');
+
+  const snapshot = await db.collection("produtos")
+    .where("id", "==", produtoId)
+    .limit(1)
+    .get();
+
+  if (snapshot.empty) {
+    throw new Error(`Produto não encontrado. ID selecionado: ${produtoId}`);
+  }
+
+  doc = snapshot.docs[0];
+  produtoRef = doc.ref;
+}
+
+const produto = doc.data();
+
+console.log('Produto encontrado:', {
+  docId: doc.id,
+  produtoId: produto.id,
+  nome: produto.nome,
+  estoque: produto.estoque
+});
     }
     
     const produto = doc.data();
