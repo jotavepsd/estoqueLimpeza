@@ -4,14 +4,49 @@
 let currentUser = null;
 
 const USERS = {
-  admin: { password: 'admin123', role: 'admin', name: 'Administrador' },
-  admin: { password: '1', role: 'admin', name: 'Cris' },
-  admin: { password: '2', role: 'admin', name: 'Caren' },
-  admin: { password: '3', role: 'admin', name: 'Cida' },
-  admin: { password: '4', role: 'admin', name: 'Terrinha' },
-  admin: { password: '5', role: 'admin', name: 'Adelson' },
-  user: { password: 'user123', role: 'user', name: 'Usuário' }
+    admin: {
+        password: 'admin123',
+        role: 'admin',
+        name: 'Administrador'
+    },
+
+    cris: {
+        password: '1',
+        role: 'admin',
+        name: 'Cris'
+    },
+
+    caren: {
+        password: '2',
+        role: 'admin',
+        name: 'Caren'
+    },
+
+    cida: {
+        password: '3',
+        role: 'admin',
+        name: 'Cida'
+    },
+
+    terrinha: {
+        password: '4',
+        role: 'admin',
+        name: 'Terrinha'
+    },
+
+    adelson: {
+        password: '5',
+        role: 'admin',
+        name: 'Adelson'
+    },
+
+    user: {
+        password: 'user123',
+        role: 'user',
+        name: 'Usuário'
+    }
 };
+
 
 function atualizarInterfaceUsuario() {
   const logado = !!currentUser;
