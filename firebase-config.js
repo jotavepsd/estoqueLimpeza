@@ -1,4 +1,6 @@
-// Configuração do Firebase
+// =========================================
+// FIREBASE
+// =========================================
 const firebaseConfig = {
   apiKey: "AIzaSyDyQmPBYiwC_MqlQWyGnU95Ld8Y-kgd8GA",
   authDomain: "estoquelimpeza-d22f2.firebaseapp.com",
@@ -9,9 +11,6 @@ const firebaseConfig = {
   appId: "1:637980743711:web:2773e86c1ca64cc9229d2a"
 };
 
-// Inicializar Firebase
-firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-
-// Exportar para uso global
 window.db = db;

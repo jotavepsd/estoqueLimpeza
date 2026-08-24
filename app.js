@@ -1,23 +1,15 @@
 // =========================================
-// APP - INICIALIZAÇÃO
+// APP
 // =========================================
-
-async function iniciar() {
-  try {
+let iniciando=false;
+async function iniciar(){
+  if(iniciando) return;
+  iniciando=true;
+  try{
     await criarProdutosIniciais();
-    await Promise.all([
-      carregarProdutos(),
-      atualizarTabelaEstoque(),
-      carregarHistorico()
-    ]);
-    console.log('✅ Sistema iniciado com sucesso');
-  } catch (error) {
-    console.error('Erro ao iniciar:', error);
-    mostrarToast('Erro ao carregar dados', 'error');
-  }
+    await Promise.all([carregarProdutos(),carregarHistorico()]);
+    atualizarTabelaEstoque();
+  }catch(e){console.error(e); mostrarToast('Erro ao carregar o sistema.','error');}
+  finally{iniciando=false;}
 }
-
-// Inicializar
-document.addEventListener('DOMContentLoaded', function() {
-  verificarSessao();
-});
+document.addEventListener('DOMContentLoaded',()=>verificarSessao());

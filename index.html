@@ -1,148 +1,659 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>Controle de Estoque - Limpeza</title>
-  
-  <!-- CSS -->
-  <link rel="stylesheet" href="style.css">
-  
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Controle de Estoque - Limpeza
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+    <!-- Firebase -->
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
 </head>
+
+
 <body>
 
-<!-- Login Screen -->
-<div id="loginContainer" class="login-container">
-  <div class="login-box">
-    <h2>📦 Estoque</h2>
-    <div class="subtitle">Sistema de Controle de Produtos de Limpeza</div>
-    <input type="text" id="loginUser" placeholder="Usuário" autocomplete="off">
-    <input type="password" id="loginPassword" placeholder="Senha" onkeypress="if(event.key === 'Enter') fazerLogin()">
-    <button onclick="fazerLogin()">Entrar</button>
-    <div id="loginError" style="color:#e17055; text-align:center; margin-top:14px; font-size:13px;"></div>
-  </div>
-</div>
 
-<!-- Main Application -->
-<div id="mainApp" style="display:none;">
-  <div class="container">
-    <div class="user-bar no-print">
-      <div class="user-info">
-        <span>👋 Olá, <strong id="userNameDisplay"></strong></span>
-        <span id="userRoleDisplay" class="user-role"></span>
-      </div>
-      <button class="btn-logout" onclick="logout()">🚪 Sair</button>
+    <!-- =====================================================
+         LOGIN
+    ====================================================== -->
+
+    <div
+        id="loginContainer"
+        class="login-container"
+    >
+
+        <div class="login-box">
+
+            <h2>
+                📦 Estoque
+            </h2>
+
+            <div class="subtitle">
+                Sistema de Controle de Produtos de Limpeza
+            </div>
+
+
+            <input
+                id="loginUser"
+                placeholder="Usuário"
+                autocomplete="username"
+            >
+
+
+            <input
+                id="loginPassword"
+                type="password"
+                placeholder="Senha"
+                autocomplete="current-password"
+            >
+
+
+            <button
+                type="button"
+                onclick="fazerLogin()"
+            >
+                Entrar
+            </button>
+
+
+            <div id="loginError"></div>
+
+        </div>
+
     </div>
 
-    <h1 class="no-print">📦 Controle de Estoque - Produtos de Limpeza</h1>
 
-    <div class="card no-print">
-      <h2>➕ Movimentação</h2>
 
-      <!-- NOVO PRODUTO -->
-      <div class="novo-produto-group" id="novoProdutoGroup">
-        <label>🆕 Cadastrar Novo Produto</label>
-        <div class="input-group">
-          <input type="text" id="novoProdutoNome" placeholder="Nome do novo produto" maxlength="50">
-          <button class="novo-produto-btn" onclick="cadastrarNovoProduto()">➕ Adicionar</button>
-        </div>
-        <small style="color: #636e72; font-size: 11px;">Digite o nome e clique em adicionar.</small>
-      </div>
+    <!-- =====================================================
+         APLICAÇÃO PRINCIPAL
+    ====================================================== -->
 
-      <div class="grid">
-        <div>
-          <label>Produto *</label>
-          <select id="produto"></select>
-        </div>
-        <div>
-          <label>Quantidade *</label>
-          <input type="number" id="quantidade" min="1">
-        </div>
-        <div>
-          <label>Responsável *</label>
-          <input type="text" id="responsavel" placeholder="Nome do responsável">
-        </div>
-        <div>
-          <label>Data de Validade</label>
-          <input type="date" id="validade">
-        </div>
-        <div>
-          <label>Data de Recebimento</label>
-          <input type="date" id="recebimento">
-        </div>
-        <div>
-          <label>Data de Entrega ao Setor</label>
-          <input type="date" id="entrega">
-        </div>
-        <div>
-          <label>Assinatura do Responsável</label>
-          <input type="text" id="assinatura" placeholder="Digite o nome">
-        </div>
-      </div>
+    <div
+        id="mainApp"
+        style="display: none;"
+    >
 
-      <div style="margin-top: 15px;">
-        <label>Observações</label>
-        <textarea id="observacoes" placeholder="Observações adicionais..."></textarea>
-      </div>
+        <div class="container">
 
-      <div class="buttons">
-        <button class="entrada-btn" id="btnEntrada" onclick="registrarEntrada()">📥 Registrar Entrada</button>
-        <button class="saida-btn" id="btnSaida" onclick="registrarSaida()">📤 Registrar Saída</button>
-      </div>
+
+            <!-- =================================================
+                 BARRA DO USUÁRIO
+            ================================================== -->
+
+            <div class="user-bar no-print">
+
+                <div>
+
+                    <span>
+                        👋 Olá,
+                        <strong id="userNameDisplay"></strong>
+                    </span>
+
+
+                    <span
+                        id="userRoleDisplay"
+                        class="user-role"
+                    ></span>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="btn-logout"
+                    onclick="logout()"
+                >
+                    🚪 Sair
+                </button>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 TÍTULO
+            ================================================== -->
+
+            <h1 class="no-print">
+                📦 Controle de Estoque -
+                Produtos de Limpeza
+            </h1>
+
+
+
+            <!-- =================================================
+                 MOVIMENTAÇÃO
+            ================================================== -->
+
+            <div class="card no-print">
+
+                <h2>
+                    ➕ Movimentação
+                </h2>
+
+
+                <!-- ---------------------------------------------
+                     CADASTRO DE PRODUTO
+                ---------------------------------------------- -->
+
+                <div
+                    id="novoProdutoGroup"
+                    class="novo-produto-group"
+                >
+
+                    <label>
+                        🆕 Cadastrar Novo Produto
+                    </label>
+
+
+                    <div class="input-group">
+
+                        <input
+                            id="novoProdutoNome"
+                            maxlength="80"
+                            placeholder="Nome do novo produto"
+                        >
+
+
+                        <button
+                            type="button"
+                            id="btnNovoProduto"
+                            class="novo-produto-btn"
+                            onclick="cadastrarNovoProduto()"
+                        >
+                            ➕ Adicionar
+                        </button>
+
+                    </div>
+
+
+                    <small>
+                        O produto será criado com estoque inicial igual a 0.
+                    </small>
+
+                </div>
+
+
+
+                <!-- ---------------------------------------------
+                     CAMPOS DA MOVIMENTAÇÃO
+                ---------------------------------------------- -->
+
+                <div class="grid">
+
+
+                    <!-- Produto -->
+
+                    <div>
+
+                        <label for="produto">
+                            Produto *
+                        </label>
+
+                        <select id="produto">
+
+                            <option value="">
+                                Selecione um produto
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+
+                    <!-- Quantidade -->
+
+                    <div>
+
+                        <label for="quantidade">
+                            Quantidade *
+                        </label>
+
+                        <input
+                            id="quantidade"
+                            type="number"
+                            min="1"
+                            step="1"
+                        >
+
+                    </div>
+
+
+
+                    <!-- Responsável -->
+
+                    <div>
+
+                        <label for="responsavel">
+                            Responsável *
+                        </label>
+
+                        <input
+                            id="responsavel"
+                            placeholder="Nome do responsável"
+                        >
+
+                    </div>
+
+
+
+                    <!-- Validade -->
+
+                    <div>
+
+                        <label for="validade">
+                            Data de Validade
+                        </label>
+
+                        <input
+                            id="validade"
+                            type="date"
+                        >
+
+                    </div>
+
+
+
+                    <!-- Recebimento -->
+
+                    <div>
+
+                        <label for="recebimento">
+                            Data de Recebimento
+                        </label>
+
+                        <input
+                            id="recebimento"
+                            type="date"
+                        >
+
+                    </div>
+
+
+
+                    <!-- Assinatura -->
+
+                    <div>
+
+                        <label for="assinatura">
+                            Assinatura do Responsável
+                        </label>
+
+                        <input
+                            id="assinatura"
+                            placeholder="Digite o nome"
+                        >
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- ---------------------------------------------
+                     OBSERVAÇÕES
+                ---------------------------------------------- -->
+
+                <div class="obs">
+
+                    <label for="observacoes">
+                        Observações
+                    </label>
+
+                    <textarea
+                        id="observacoes"
+                        placeholder="Observações adicionais..."
+                    ></textarea>
+
+                </div>
+
+
+
+                <!-- ---------------------------------------------
+                     BOTÕES DE MOVIMENTAÇÃO
+                ---------------------------------------------- -->
+
+                <div class="buttons">
+
+                    <button
+                        type="button"
+                        id="btnEntrada"
+                        class="entrada-btn"
+                        onclick="registrarEntrada()"
+                    >
+                        📥 Registrar Entrada
+                    </button>
+
+
+                    <button
+                        type="button"
+                        id="btnSaida"
+                        class="saida-btn"
+                        onclick="registrarSaida()"
+                    >
+                        📤 Registrar Saída
+                    </button>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 ESTOQUE ATUAL
+            ================================================== -->
+
+            <div class="card">
+
+
+                <div class="header-actions">
+
+                    <h2>
+                        📊 Estoque Atual
+                    </h2>
+
+
+                    <button
+                        type="button"
+                        class="imprimir-btn no-print"
+                        onclick="imprimirEstoque()"
+                    >
+                        🖨️ Imprimir
+                    </button>
+
+                </div>
+
+
+
+                <!-- Filtro do estoque -->
+
+                <div class="filtro no-print">
+
+                    <input
+                        id="filtroProduto"
+                        placeholder="🔍 Filtrar produto..."
+                        oninput="filtrarEstoque()"
+                    >
+
+                </div>
+
+
+
+                <!-- Tabela -->
+
+                <div class="tabela-container">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Produto
+                                </th>
+
+
+                                <th class="center">
+                                    Saldo
+                                </th>
+
+
+                                <th class="no-print">
+                                    Última Atualização
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody
+                            id="estoqueTabela"
+                        ></tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 HISTÓRICO
+            ================================================== -->
+
+            <div class="card no-print">
+
+
+                <!-- ---------------------------------------------
+                     CABEÇALHO DO HISTÓRICO
+                ---------------------------------------------- -->
+
+                <div class="header-actions">
+
+                    <h2>
+                        📜 Histórico de Movimentações
+                    </h2>
+
+
+                    <button
+                        type="button"
+                        id="btnLimparHistorico"
+                        class="saida-btn"
+                        onclick="limparHistorico()"
+                    >
+                        🗑️ Limpar Histórico
+                    </button>
+
+                </div>
+
+
+
+                <!-- ---------------------------------------------
+                     FILTROS DO HISTÓRICO
+                ---------------------------------------------- -->
+
+                <div
+                    class="filtro-historico"
+                    style="
+                        display: grid;
+                        grid-template-columns:
+                            minmax(180px, 1.5fr)
+                            minmax(150px, 1fr)
+                            minmax(150px, 1fr)
+                            auto;
+                        gap: 10px;
+                        align-items: end;
+                        margin-bottom: 15px;
+                    "
+                >
+
+
+                    <!-- Produto -->
+
+                    <div>
+
+                        <label
+                            for="filtroHistoricoProduto"
+                        >
+                            🔍 Produto
+                        </label>
+
+
+                        <input
+                            id="filtroHistoricoProduto"
+                            type="text"
+                            placeholder="Filtrar por produto..."
+                            oninput="filtrarHistorico()"
+                        >
+
+                    </div>
+
+
+
+                    <!-- Data inicial -->
+
+                    <div>
+
+                        <label
+                            for="filtroHistoricoDataInicial"
+                        >
+                            📅 Data inicial
+                        </label>
+
+
+                        <input
+                            id="filtroHistoricoDataInicial"
+                            type="date"
+                            onchange="filtrarHistorico()"
+                        >
+
+                    </div>
+
+
+
+                    <!-- Data final -->
+
+                    <div>
+
+                        <label
+                            for="filtroHistoricoDataFinal"
+                        >
+                            📅 Data final
+                        </label>
+
+
+                        <input
+                            id="filtroHistoricoDataFinal"
+                            type="date"
+                            onchange="filtrarHistorico()"
+                        >
+
+                    </div>
+
+
+
+                    <!-- Limpar filtros -->
+
+                    <button
+                        type="button"
+                        class="imprimir-btn"
+                        onclick="limparFiltrosHistorico()"
+                    >
+                        🔄 Limpar Filtros
+                    </button>
+
+                </div>
+
+
+
+                <!-- ---------------------------------------------
+                     TABELA DO HISTÓRICO
+                ---------------------------------------------- -->
+
+                <div class="tabela-container">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Tipo
+                                </th>
+
+
+                                <th>
+                                    Produto
+                                </th>
+
+
+                                <th class="center">
+                                    Qtd
+                                </th>
+
+
+                                <th>
+                                    Responsável
+                                </th>
+
+
+                                <th>
+                                    Data da Movimentação
+                                </th>
+
+
+                                <th>
+                                    Data de Recebimento
+                                </th>
+
+
+                                <th>
+                                    Obs
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody
+                            id="historicoTabela"
+                        ></tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
     </div>
 
-    <div class="card">
-      <div class="header-actions">
-        <h2>📊 Estoque Atual</h2>
-        <button class="imprimir-btn no-print" onclick="imprimirEstoque()">🖨️ Imprimir</button>
-      </div>
-      <div class="filtro no-print">
-        <input type="text" id="filtroProduto" placeholder="🔍 Filtrar produto..." onkeyup="filtrarEstoque()">
-      </div>
-      <div class="tabela-container">
-        <table id="tabelaEstoque">
-          <thead>
-            <tr>
-              <th>Produto</th>
-              <th style="text-align:center;">Saldo</th>
-              <th class="no-print">Última Atualização</th>
-            </tr>
-          </thead>
-          <tbody id="estoqueTabela"></tbody>
-        </table>
-      </div>
-    </div>
 
-    <div class="card no-print">
-      <h2>📜 Histórico de Movimentações</h2>
-      <div class="tabela-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Tipo</th>
-              <th>Produto</th>
-              <th style="text-align:center;">Qtd</th>
-              <th>Responsável</th>
-              <th>Data</th>
-              <th>Obs</th>
-            </tr>
-          </thead>
-          <tbody id="historicoTabela"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
 
-<!-- JavaScript -->
-<script src="firebase-config.js"></script>
-<script src="auth.js"></script>
-<script src="produtos.js"></script>
-<script src="movimentacoes.js"></script>
-<script src="ui.js"></script>
-<script src="app.js"></script>
+    <!-- =====================================================
+         JAVASCRIPT
+    ====================================================== -->
+
+    <script src="firebase-config.js"></script>
+
+    <script src="auth.js"></script>
+
+    <script src="produtos.js"></script>
+
+    <script src="movimentacoes.js"></script>
+
+    <script src="ui.js"></script>
+
+    <script src="app.js"></script>
+
+
 </body>
+
 </html>
