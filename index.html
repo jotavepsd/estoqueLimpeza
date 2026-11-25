@@ -2,658 +2,239 @@
 <html lang="pt-BR">
 
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>
-        Controle de Estoque - Limpeza
-    </title>
-
-    <link
-        rel="stylesheet"
-        href="style.css"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Estoque - Limpeza</title>
+    <link rel="stylesheet" href="style.css">
 
     <!-- Firebase -->
-
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
 </head>
 
-
 <body>
-
 
     <!-- =====================================================
          LOGIN
     ====================================================== -->
-
-    <div
-        id="loginContainer"
-        class="login-container"
-    >
-
+    <div id="loginContainer" class="login-container">
         <div class="login-box">
+            <h2>📦 Estoque</h2>
+            <div class="subtitle">Sistema de Controle de Produtos de Limpeza</div>
 
-            <h2>
-                📦 Estoque
-            </h2>
+            <input id="loginUser" placeholder="Usuário" autocomplete="username">
+            <input id="loginPassword" type="password" placeholder="Senha" autocomplete="current-password">
 
-            <div class="subtitle">
-                Sistema de Controle de Produtos de Limpeza
-            </div>
-
-
-            <input
-                id="loginUser"
-                placeholder="Usuário"
-                autocomplete="username"
-            >
-
-
-            <input
-                id="loginPassword"
-                type="password"
-                placeholder="Senha"
-                autocomplete="current-password"
-            >
-
-
-            <button
-                type="button"
-                onclick="fazerLogin()"
-            >
-                Entrar
-            </button>
-
-
+            <button type="button" onclick="fazerLogin()">Entrar</button>
             <div id="loginError"></div>
-
         </div>
-
     </div>
-
-
 
     <!-- =====================================================
          APLICAÇÃO PRINCIPAL
     ====================================================== -->
-
-    <div
-        id="mainApp"
-        style="display: none;"
-    >
-
+    <div id="mainApp" style="display: none;">
         <div class="container">
 
-
-            <!-- =================================================
-                 BARRA DO USUÁRIO
-            ================================================== -->
-
+            <!-- BARRA DO USUÁRIO -->
             <div class="user-bar no-print">
-
                 <div>
-
-                    <span>
-                        👋 Olá,
-                        <strong id="userNameDisplay"></strong>
-                    </span>
-
-
-                    <span
-                        id="userRoleDisplay"
-                        class="user-role"
-                    ></span>
-
+                    <span>👋 Olá, <strong id="userNameDisplay"></strong></span>
+                    <span id="userRoleDisplay" class="user-role"></span>
                 </div>
-
-
-                <button
-                    type="button"
-                    class="btn-logout"
-                    onclick="logout()"
-                >
-                    🚪 Sair
-                </button>
-
+                <button type="button" class="btn-logout" onclick="logout()">🚪 Sair</button>
             </div>
 
+            <!-- TÍTULO -->
+            <h1 class="no-print">📦 Controle de Estoque - Produtos de Limpeza</h1>
 
+            <!-- CARDS DE RESUMO -->
+            <div class="resumo-grid no-print">
+                <div class="resumo-card">
+                    <span class="resumo-label">Total de Produtos</span>
+                    <strong id="resumoTotalProdutos" class="resumo-valor">0</strong>
+                </div>
+                <div class="resumo-card alerta">
+                    <span class="resumo-label">Estoque Baixo</span>
+                    <strong id="resumoEstoqueBaixo" class="resumo-valor">0</strong>
+                </div>
+                <div class="resumo-card critico">
+                    <span class="resumo-label">Estoque Zerado</span>
+                    <strong id="resumoEstoqueZerado" class="resumo-valor">0</strong>
+                </div>
+            </div>
 
-            <!-- =================================================
-                 TÍTULO
-            ================================================== -->
-
-            <h1 class="no-print">
-                📦 Controle de Estoque -
-                Produtos de Limpeza
-            </h1>
-
-
-
-            <!-- =================================================
-                 MOVIMENTAÇÃO
-            ================================================== -->
-
+            <!-- MOVIMENTAÇÃO -->
             <div class="card no-print">
+                <h2>➕ Movimentação</h2>
 
-                <h2>
-                    ➕ Movimentação
-                </h2>
-
-
-                <!-- ---------------------------------------------
-                     CADASTRO DE PRODUTO
-                ---------------------------------------------- -->
-
-                <div
-                    id="novoProdutoGroup"
-                    class="novo-produto-group"
-                >
-
-                    <label>
-                        🆕 Cadastrar Novo Produto
-                    </label>
-
-
+                <!-- CADASTRO DE PRODUTO -->
+                <div id="novoProdutoGroup" class="novo-produto-group">
+                    <label>🆕 Cadastrar Novo Produto</label>
                     <div class="input-group">
-
-                        <input
-                            id="novoProdutoNome"
-                            maxlength="80"
-                            placeholder="Nome do novo produto"
-                        >
-
-
-                        <button
-                            type="button"
-                            id="btnNovoProduto"
-                            class="novo-produto-btn"
-                            onclick="cadastrarNovoProduto()"
-                        >
-                            ➕ Adicionar
-                        </button>
-
+                        <input id="novoProdutoNome" maxlength="80" placeholder="Nome do novo produto">
+                        <button type="button" id="btnNovoProduto" class="novo-produto-btn" onclick="cadastrarNovoProduto()">➕ Adicionar</button>
                     </div>
-
-
-                    <small>
-                        O produto será criado com estoque inicial igual a 0.
-                    </small>
-
+                    <small>O produto será criado com estoque inicial igual a 0.</small>
                 </div>
 
-
-
-                <!-- ---------------------------------------------
-                     CAMPOS DA MOVIMENTAÇÃO
-                ---------------------------------------------- -->
-
+                <!-- CAMPOS DA MOVIMENTAÇÃO -->
                 <div class="grid">
-
-
-                    <!-- Produto -->
-
                     <div>
-
-                        <label for="produto">
-                            Produto *
-                        </label>
-
-                        <select id="produto">
-
-                            <option value="">
-                                Selecione um produto
-                            </option>
-
+                        <label for="produto">Produto *</label>
+                        <select id="produto" onchange="atualizarInfoProdutoSelecionado()">
+                            <option value="">Selecione um produto</option>
                         </select>
-
+                        <div id="produtoSelecionadoInfo" class="produto-info-pill" style="display: none;"></div>
                     </div>
-
-
-
-                    <!-- Quantidade -->
 
                     <div>
-
-                        <label for="quantidade">
-                            Quantidade *
-                        </label>
-
-                        <input
-                            id="quantidade"
-                            type="number"
-                            min="1"
-                            step="1"
-                        >
-
+                        <label for="quantidade">Quantidade *</label>
+                        <input id="quantidade" type="number" min="1" step="1" placeholder="Ex: 5">
                     </div>
-
-
-
-                    <!-- Responsável -->
 
                     <div>
-
-                        <label for="responsavel">
-                            Responsável *
-                        </label>
-
-                        <input
-                            id="responsavel"
-                            placeholder="Nome do responsável"
-                        >
-
+                        <label for="responsavel">Responsável *</label>
+                        <input id="responsavel" placeholder="Nome do responsável">
                     </div>
-
-
-
-                    <!-- Validade -->
 
                     <div>
-
-                        <label for="validade">
-                            Data de Validade
-                        </label>
-
-                        <input
-                            id="validade"
-                            type="date"
-                        >
-
+                        <label for="validade">Data de Validade</label>
+                        <input id="validade" type="date">
                     </div>
-
-
-
-                    <!-- Recebimento -->
 
                     <div>
-
-                        <label for="recebimento">
-                            Data de Recebimento
-                        </label>
-
-                        <input
-                            id="recebimento"
-                            type="date"
-                        >
-
+                        <label for="recebimento">Data de Recebimento</label>
+                        <input id="recebimento" type="date">
                     </div>
-
-
-
-                    <!-- Assinatura -->
 
                     <div>
-
-                        <label for="assinatura">
-                            Assinatura do Responsável
-                        </label>
-
-                        <input
-                            id="assinatura"
-                            placeholder="Digite o nome"
-                        >
-
+                        <label for="assinatura">Assinatura do Responsável</label>
+                        <input id="assinatura" placeholder="Digite o nome">
                     </div>
-
                 </div>
 
-
-
-                <!-- ---------------------------------------------
-                     OBSERVAÇÕES
-                ---------------------------------------------- -->
-
+                <!-- OBSERVAÇÕES -->
                 <div class="obs">
-
-                    <label for="observacoes">
-                        Observações
-                    </label>
-
-                    <textarea
-                        id="observacoes"
-                        placeholder="Observações adicionais..."
-                    ></textarea>
-
+                    <label for="observacoes">Observações</label>
+                    <textarea id="observacoes" placeholder="Observações adicionais..."></textarea>
                 </div>
 
-
-
-                <!-- ---------------------------------------------
-                     BOTÕES DE MOVIMENTAÇÃO
-                ---------------------------------------------- -->
-
+                <!-- BOTÕES DE MOVIMENTAÇÃO -->
                 <div class="buttons">
-
-                    <button
-                        type="button"
-                        id="btnEntrada"
-                        class="entrada-btn"
-                        onclick="registrarEntrada()"
-                    >
-                        📥 Registrar Entrada
-                    </button>
-
-
-                    <button
-                        type="button"
-                        id="btnSaida"
-                        class="saida-btn"
-                        onclick="registrarSaida()"
-                    >
-                        📤 Registrar Saída
-                    </button>
-
+                    <button type="button" id="btnEntrada" class="entrada-btn" onclick="registrarEntrada()">📥 Registrar Entrada</button>
+                    <button type="button" id="btnSaida" class="saida-btn" onclick="registrarSaida()">📤 Registrar Saída</button>
                 </div>
-
             </div>
 
-
-
-            <!-- =================================================
-                 ESTOQUE ATUAL
-            ================================================== -->
-
+            <!-- ESTOQUE ATUAL -->
             <div class="card">
-
-
                 <div class="header-actions">
-
-                    <h2>
-                        📊 Estoque Atual
-                    </h2>
-
-
-                    <button
-                        type="button"
-                        class="imprimir-btn no-print"
-                        onclick="imprimirEstoque()"
-                    >
-                        🖨️ Imprimir
-                    </button>
-
+                    <h2>📊 Estoque Atual</h2>
+                    <button type="button" class="imprimir-btn no-print" onclick="imprimirEstoque()">🖨️ Imprimir</button>
                 </div>
 
-
-
-                <!-- Filtro do estoque -->
-
-                <div class="filtro no-print">
-
-                    <input
-                        id="filtroProduto"
-                        placeholder="🔍 Filtrar produto..."
-                        oninput="filtrarEstoque()"
-                    >
-
+                <!-- Filtros do estoque -->
+                <div class="filtros-estoque no-print">
+                    <input id="filtroProduto" placeholder="🔍 Filtrar produto..." oninput="filtrarEstoque()">
+                    <select id="filtroStatusEstoque" onchange="filtrarEstoque()">
+                        <option value="todos">Todos os status</option>
+                        <option value="critico">⚠️ Baixo ou Zerado</option>
+                        <option value="baixo">🟠 Apenas Estoque Baixo</option>
+                        <option value="zerado">🔴 Apenas Zerados</option>
+                    </select>
                 </div>
-
-
 
                 <!-- Tabela -->
-
                 <div class="tabela-container">
-
                     <table>
-
                         <thead>
-
                             <tr>
-
-                                <th>
-                                    Produto
-                                </th>
-
-
-                                <th class="center">
-                                    Saldo
-                                </th>
-
-
-                                <th class="no-print">
-                                    Última Atualização
-                                </th>
-
+                                <th>Produto</th>
+                                <th class="center">Saldo</th>
+                                <th class="center">Status</th>
+                                <th class="no-print">Última Atualização</th>
                             </tr>
-
                         </thead>
-
-
-                        <tbody
-                            id="estoqueTabela"
-                        ></tbody>
-
+                        <tbody id="estoqueTabela"></tbody>
                     </table>
-
                 </div>
-
             </div>
 
-
-
-            <!-- =================================================
-                 HISTÓRICO
-            ================================================== -->
-
+            <!-- HISTÓRICO & AUDITORIA -->
             <div class="card no-print">
-
-
-                <!-- ---------------------------------------------
-                     CABEÇALHO DO HISTÓRICO
-                ---------------------------------------------- -->
-
                 <div class="header-actions">
-
-                    <h2>
-                        📜 Histórico de Movimentações
-                    </h2>
-
-
-                    <button
-                        type="button"
-                        id="btnLimparHistorico"
-                        class="saida-btn"
-                        onclick="limparHistorico()"
-                    >
-                        🗑️ Limpar Histórico
-                    </button>
-
+                    <h2>📜 Histórico e Auditoria</h2>
+                    <div class="acoes-header">
+                        <button type="button" class="imprimir-btn" onclick="exportarHistoricoCSV()">📄 Exportar CSV</button>
+                        <button type="button" id="btnLimparHistorico" class="saida-btn" onclick="limparHistorico()">🗑️ Limpar Histórico</button>
+                    </div>
                 </div>
 
-
-
-                <!-- ---------------------------------------------
-                     FILTROS DO HISTÓRICO
-                ---------------------------------------------- -->
-
-                <div
-                    class="filtro-historico"
-                    style="
-                        display: grid;
-                        grid-template-columns:
-                            minmax(180px, 1.5fr)
-                            minmax(150px, 1fr)
-                            minmax(150px, 1fr)
-                            auto;
-                        gap: 10px;
-                        align-items: end;
-                        margin-bottom: 15px;
-                    "
-                >
-
-
-                    <!-- Produto -->
-
+                <!-- FILTROS DO HISTÓRICO -->
+                <div class="filtro-historico">
                     <div>
-
-                        <label
-                            for="filtroHistoricoProduto"
-                        >
-                            🔍 Produto
-                        </label>
-
-
-                        <input
-                            id="filtroHistoricoProduto"
-                            type="text"
-                            placeholder="Filtrar por produto..."
-                            oninput="filtrarHistorico()"
-                        >
-
+                        <label for="filtroHistoricoProduto">🔍 Produto</label>
+                        <input id="filtroHistoricoProduto" type="text" placeholder="Filtrar por produto..." oninput="filtrarHistorico()">
                     </div>
 
-
-
-                    <!-- Data inicial -->
-
                     <div>
-
-                        <label
-                            for="filtroHistoricoDataInicial"
-                        >
-                            📅 Data inicial
-                        </label>
-
-
-                        <input
-                            id="filtroHistoricoDataInicial"
-                            type="date"
-                            onchange="filtrarHistorico()"
-                        >
-
+                        <label for="filtroHistoricoTipo">🔄 Tipo</label>
+                        <select id="filtroHistoricoTipo" onchange="filtrarHistorico()">
+                            <option value="">Todos</option>
+                            <option value="Entrada">Entrada</option>
+                            <option value="Saída">Saída</option>
+                            <option value="Ajuste">Ajuste Direto</option>
+                        </select>
                     </div>
 
-
-
-                    <!-- Data final -->
-
                     <div>
-
-                        <label
-                            for="filtroHistoricoDataFinal"
-                        >
-                            📅 Data final
-                        </label>
-
-
-                        <input
-                            id="filtroHistoricoDataFinal"
-                            type="date"
-                            onchange="filtrarHistorico()"
-                        >
-
+                        <label for="filtroHistoricoResponsavel">👤 Responsável</label>
+                        <input id="filtroHistoricoResponsavel" type="text" placeholder="Filtrar responsável..." oninput="filtrarHistorico()">
                     </div>
 
+                    <div>
+                        <label for="filtroHistoricoDataInicial">📅 Data inicial</label>
+                        <input id="filtroHistoricoDataInicial" type="date" onchange="filtrarHistorico()">
+                    </div>
 
+                    <div>
+                        <label for="filtroHistoricoDataFinal">📅 Data final</label>
+                        <input id="filtroHistoricoDataFinal" type="date" onchange="filtrarHistorico()">
+                    </div>
 
-                    <!-- Limpar filtros -->
-
-                    <button
-                        type="button"
-                        class="imprimir-btn"
-                        onclick="limparFiltrosHistorico()"
-                    >
-                        🔄 Limpar Filtros
-                    </button>
-
+                    <button type="button" class="imprimir-btn" onclick="limparFiltrosHistorico()">🔄 Limpar</button>
                 </div>
 
-
-
-                <!-- ---------------------------------------------
-                     TABELA DO HISTÓRICO
-                ---------------------------------------------- -->
-
+                <!-- TABELA DO HISTÓRICO -->
                 <div class="tabela-container">
-
                     <table>
-
                         <thead>
-
                             <tr>
-
-                                <th>
-                                    Tipo
-                                </th>
-
-
-                                <th>
-                                    Produto
-                                </th>
-
-
-                                <th class="center">
-                                    Qtd
-                                </th>
-
-
-                                <th>
-                                    Responsável
-                                </th>
-
-
-                                <th>
-                                    Data da Movimentação
-                                </th>
-
-
-                                <th>
-                                    Data de Recebimento
-                                </th>
-
-
-                                <th>
-                                    Obs
-                                </th>
-
+                                <th>Tipo</th>
+                                <th>Produto</th>
+                                <th class="center">Qtd / Saldo</th>
+                                <th>Responsável</th>
+                                <th>Data da Movimentação</th>
+                                <th>Data de Recebimento</th>
+                                <th>Detalhes / Obs</th>
                             </tr>
-
                         </thead>
-
-
-                        <tbody
-                            id="historicoTabela"
-                        ></tbody>
-
+                        <tbody id="historicoTabela"></tbody>
                     </table>
-
                 </div>
-
             </div>
-
 
         </div>
-
     </div>
 
-
-
-    <!-- =====================================================
-         JAVASCRIPT
-    ====================================================== -->
-
+    <!-- JAVASCRIPT -->
     <script src="firebase-config.js"></script>
-
-    <script src="auth.js"></script>
-
-    <script src="produtos.js"></script>
-
-    <script src="movimentacoes.js"></script>
-
     <script src="ui.js"></script>
-
+    <script src="auth.js"></script>
+    <script src="produtos.js"></script>
+    <script src="movimentacoes.js"></script>
     <script src="app.js"></script>
 
-
 </body>
-
 </html>
