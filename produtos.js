@@ -462,6 +462,86 @@ function badgeMedida(medida) {
   return `<span class="medida-pill ${tipo}">${label}</span>`;
 }
 
+window.editarProduto = async function (id) {
+  if (currentUser?.role !== 'admin') {
+    mostrarToast('Apenas administradores podem editar produtos!', 'error');
+    return;
+  }
+
+  const produto = produtosCache.find(p => p.id === id);
+  if (!produto) {
+    mostrarToast('Produto não encontrado.', 'error');
+    return;
+  }
+
+  const dadosEditados = await abrirModalEditarProduto({
+    nomeProduto: produto.nome,
+    unidadeMedida: produto.unidadeMedida
+  });
+
+  if (!dadosEditados) return;
+
+  const novoNome = dadosEditados.nome;
+  const novaMedida = dadosEditados.unidadeMedida;
+
+  const duplicado = produtosCache.some(
+    p => p.id !== id && p.nome.toLowerCase() === novoNome.toLowerCase()
+  );
+  if (duplicado) {
+    mostrarToast('Já existe outro produto com esse nome!', 'error');
+    return;
+  }
+
+  const mudouNome = produto.nome !== novoNome;
+  const mudouMedida = (produto.unidadeMedida || 'unidade') !== novaMedida;
+
+  if (!mudouNome && !mudouMedida) {
+    mostrarToast('Nenhuma alteração foi feita.', 'info');
+    return;
+  }
+
+  try {
+    const agora = new Date();
+    const dataFormatadaBR = agora.toLocaleString('pt-BR');
+    const dataISO = agora.toISOString();
+    const produtoRef = db.collection('produtos').doc(id);
+
+    await produtoRef.update({
+      nome: novoNome,
+      unidadeMedida: novaMedida,
+      ultimaAtualizacao: dataFormatadaBR
+    });
+
+    // Opcional: registra na auditoria quando houver alteração cadastral relevante
+    const detalhes = [];
+    if (mudouNome) detalhes.push(`Nome: "${produto.nome}" → "${novoNome}"`);
+    if (mudouMedida) detalhes.push(`Tipo: ${formatarMedida(produto.unidadeMedida)} → ${formatarMedida(novaMedida)}`);
+
+    await db.collection('movimentacoes').add({
+      tipo: 'Ajuste',
+      produto: novoNome,
+      produtoId: id,
+      quantidade: 0,
+      saldoAnterior: Number(produto.estoque) || 0,
+      saldoPosterior: Number(produto.estoque) || 0,
+      responsavel: currentUser.name,
+      validade: null,
+      recebimento: null,
+      assinatura: null,
+      observacoes: `Cadastro atualizado (${detalhes.join(' | ')})`,
+      data: dataFormatadaBR,
+      dataCriacao: dataISO,
+      usuario: currentUser.name
+    });
+
+    mostrarToast(`✅ Produto "${novoNome}" atualizado!`, 'success');
+    await Promise.all([carregarProdutos(), carregarHistorico()]);
+  } catch (error) {
+    console.error('Erro ao editar produto:', error);
+    mostrarToast('Erro ao atualizar produto.', 'error');
+  }
+};
+
 // =========================================
 // EXPORTAR FUNÇÕES E GETTER DO CACHE
 // =========================================
