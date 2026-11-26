@@ -377,6 +377,84 @@ window.exportarHistoricoCSV = function () {
   mostrarToast('📥 Histórico exportado em CSV!', 'success');
 };
 
+function abrirModalEditarProduto({ nomeProduto, unidadeMedida }) {
+  return new Promise((resolve) => {
+    const backdrop = garantirContainerModal();
+    const box = backdrop.querySelector('.modal-box');
+
+    box.innerHTML = `
+      <div class="modal-header">
+        <h3>🏷️ Editar Produto</h3>
+        <button type="button" class="modal-close" id="modalBtnFechar" aria-label="Fechar">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-campo">
+          <label for="modalNomeProduto">Nome do produto *</label>
+          <input id="modalNomeProduto" type="text" maxlength="80" value="${escapeHtml(nomeProduto)}">
+        </div>
+        <div class="modal-campo">
+          <label for="modalMedidaProduto">Tipo de apresentação *</label>
+          <select id="modalMedidaProduto">
+            <option value="unidade" ${unidadeMedida !== 'pacote' ? 'selected' : ''}>🔹 Unidade</option>
+            <option value="pacote" ${unidadeMedida === 'pacote' ? 'selected' : ''}>📦 Pacote</option>
+          </select>
+        </div>
+        <small id="modalEditarErro" class="modal-erro"></small>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-modal-cancel" id="modalBtnCancelar">Cancelar</button>
+        <button type="button" class="btn-modal-primary" id="modalBtnSalvarEdicao">Salvar Alterações</button>
+      </div>
+    `;
+
+    backdrop.style.display = 'flex';
+
+    const finalizar = (res) => {
+      fecharModalCustomizado(backdrop);
+      resolve(res);
+    };
+
+    const salvar = () => {
+      const nome = (document.getElementById('modalNomeProduto')?.value || '').trim();
+      const medida = document.getElementById('modalMedidaProduto')?.value === 'pacote' ? 'pacote' : 'unidade';
+      const erro = document.getElementById('modalEditarErro');
+
+      if (!nome) {
+        if (erro) erro.textContent = 'Informe o nome do produto.';
+        document.getElementById('modalNomeProduto')?.focus();
+        return;
+      }
+
+      finalizar({ nome, unidadeMedida: medida });
+    };
+
+    box.querySelector('#modalBtnFechar').onclick = () => finalizar(null);
+    box.querySelector('#modalBtnCancelar').onclick = () => finalizar(null);
+    box.querySelector('#modalBtnSalvarEdicao').onclick = salvar;
+
+    backdrop.onclick = (e) => {
+      if (e.target === backdrop) finalizar(null);
+    };
+
+    backdrop._escHandler = (e) => {
+      if (e.key === 'Escape') finalizar(null);
+      if (e.key === 'Enter' && document.activeElement?.tagName === 'INPUT') {
+        e.preventDefault();
+        salvar();
+      }
+    };
+    document.addEventListener('keydown', backdrop._escHandler);
+
+    setTimeout(() => {
+      const input = document.getElementById('modalNomeProduto');
+      input?.focus();
+      input?.select();
+    }, 10);
+  });
+}
+
+window.abrirModalEditarProduto = abrirModalEditarProduto;
+
 window.escapeHtml = escapeHtml;
 window.mostrarToast = mostrarToast;
 window.setLoadingButton = setLoadingButton;
