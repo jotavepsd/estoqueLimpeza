@@ -73,6 +73,7 @@ async function carregarProdutos() {
         ...produto,
         id: doc.id,
         estoque: Number(produto.estoque) || 0,
+        unidadeMedida: produto.unidadeMedida === 'pacote' ? 'pacote' : 'unidade',
         estoqueMinimo: Number(produto.estoqueMinimo ?? 3)
       });
     });
@@ -176,14 +177,18 @@ window.cadastrarNovoProduto = async function () {
 
     const id = `${normalizarSlugProduto(nomeProduto)}_${Date.now()}`;
 
-    await db.collection('produtos').doc(id).set({
-      id,
-      nome: nomeProduto,
-      estoque: 0,
-      estoqueMinimo: 3,
-      ultimaAtualizacao: new Date().toLocaleString('pt-BR'),
-      dataCadastro: new Date().toISOString()
-    });
+const campoMedida = document.getElementById('novoProdutoMedida');
+const unidadeMedida = campoMedida?.value === 'pacote' ? 'pacote' : 'unidade';
+
+await db.collection('produtos').doc(id).set({
+  id,
+  nome: nomeProduto,
+  unidadeMedida,
+  estoque: 0,
+  estoqueMinimo: 3,
+  ultimaAtualizacao: new Date().toLocaleString('pt-BR'),
+  dataCadastro: new Date().toISOString()
+});
 
     mostrarToast(`✅ Produto "${nomeProduto}" cadastrado com sucesso!`, 'success');
     campoNome.value = '';
@@ -446,6 +451,16 @@ window.filtrarEstoque = function () {
 
   renderizarTabelaEstoque(filtrados);
 };
+
+function formatarMedida(medida) {
+  return medida === 'pacote' ? 'Pacote' : 'Unidade';
+}
+
+function badgeMedida(medida) {
+  const tipo = medida === 'pacote' ? 'pacote' : 'unidade';
+  const label = tipo === 'pacote' ? '📦 Pacote' : '🔹 Unidade';
+  return `<span class="medida-pill ${tipo}">${label}</span>`;
+}
 
 // =========================================
 // EXPORTAR FUNÇÕES E GETTER DO CACHE
